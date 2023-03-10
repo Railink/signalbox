@@ -1,0 +1,9 @@
+- id: 101
+  pulse: false
+  aspects:
+    - name: Red
+      id: 1
+      pins:
+        - id: 8
+          controller: 1
+          value: HIGH

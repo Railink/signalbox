@@ -1,0 +1,5 @@
+- name: Houses
+  id: 1
+  pins:
+      - id: 1
+        value: 0

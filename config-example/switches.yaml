@@ -1,0 +1,19 @@
+- id: 1
+  position:
+      x: 10
+      y: 1
+  plus:
+      node: 1001
+      cost: 1
+      pin:
+          id: 2
+          value: 1
+  minus:
+      node: 1002
+      cost: 1
+      pin:
+          id: 3
+          value: 0
+  back:
+      node: 1002
+      cost: 1

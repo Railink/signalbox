@@ -1,0 +1,12 @@
+version: 1
+name: Quassendorf
+gpio:
+    expanders:
+        - type: TEST001
+          pins:
+              - pin: 1
+                name: Test pin
+          environment:
+              - name: PIN_COUNT
+                value: 16
+          size: 16
