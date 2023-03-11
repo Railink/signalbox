@@ -7,6 +7,7 @@
     "devDependencies": {
         "@types/js-yaml": "^4.0.5",
         "@types/koa": "^2.13.5",
+        "@types/koa-bodyparser": "^4.3.10",
         "@types/koa-static": "^4.0.2",
         "@types/koa__router": "^12.0.0",
         "@types/node": "8.10.66",
@@ -28,6 +29,7 @@
         "dijkstra-calculator": "^1.0.8",
         "js-yaml": "^4.1.0",
         "koa": "^2.14.1",
+        "koa-bodyparser": "^4.3.0",
         "koa-static": "^5.0.0",
         "typecheck.macro": "^0.7.3",
         "winston": "^3.8.2",
@@ -36,7 +38,7 @@
     "scripts": {
         "start": "cd server && node dist/index.js",
         "dev": "cd server && node dist/index.js",
-        "build": "cd server && tsc && cd ../client && vue-tsc && vite build",
+        "build": "cd server && tsc -p ./tsconfig.json && cd ../client && vue-tsc && vite build",
         "preview": "cd client && vite preview"
     }
 }

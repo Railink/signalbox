@@ -1,5 +1,6 @@
-import { ExpanderEnvironmentVariable } from "@railink/signalbox";
+import { ExpanderEnvironmentVariable } from "../config/config";
 import { isNumber } from "util";
+import { logger } from "..";
 import { Controller } from "./Controller";
 
 export default class TEST001 implements Controller {
@@ -24,6 +25,7 @@ export default class TEST001 implements Controller {
 
         if (!isNumber(value)) throw new Error("Invalid value!");
 
+        logger.info(`Setting pin ${pin} on controller to ${value}`);
         this.pins[pin] = value as number;
     }
 

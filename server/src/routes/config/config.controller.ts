@@ -1,5 +1,5 @@
 import Router from "@koa/router";
-import { AppContext } from "@railink/signalbox";
+import { AppContext } from "../../config/config";
 import { DefaultState } from "koa";
 
 const configRoutes = (router: Router<DefaultState, AppContext>) => {

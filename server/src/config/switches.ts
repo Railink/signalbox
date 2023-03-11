@@ -1,4 +1,4 @@
-import { RailSwitch } from "@railink/signalbox";
+import { RailSwitch } from "./config";
 
 export default function verifySwitches(switches: RailSwitch[]) {
     switches.forEach((railSwitch) => {
