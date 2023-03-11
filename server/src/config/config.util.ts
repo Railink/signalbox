@@ -1,8 +1,4 @@
-import {
-  RailSwitch,
-  RailWaypoint,
-  StationConfig,
-} from "../config/config";
+import { RailSwitch, RailWaypoint, StationConfig } from "../config/config";
 import { controllers } from "..";
 import { Controller } from "../controllers/Controller";
 
@@ -28,13 +24,13 @@ export const getController = (pin: number): NodePinConfiguration => {
   let pinSum = 0;
 
   for (let controller of controllers) {
+    if (pinSum + controller.size() > pin) break;
     pinSum += controller.size();
-    if (pinSum > pin) break;
     iterations++;
   }
 
   return {
-    pin: pinSum - (pinSum - pin),
+    pin: pin - pinSum,
     controller: controllers[iterations],
   };
 };
