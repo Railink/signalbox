@@ -19,6 +19,8 @@ const isWaypoint = (node: RailWaypoint | RailSwitch): node is RailWaypoint =>
 const activePaths: LinkedListItem[][] = [];
 const queues: Map<string, LinkedListItem[][]> = new Map();
 
+export const getActivePaths = () => activePaths;
+
 export const createPath = (
   start: string,
   finish: string,
@@ -66,10 +68,11 @@ export const createPath = (
   return graph.calculateShortestPathAsLinkedListResult(start, finish);
 };
 
+// TODO: Check if the path collides with other active ones
 export const setPath = (
   stationConfig: StationConfig,
   steps: LinkedListItem[][],
-  withSignals: boolean
+  withSignals: boolean // TODO: Automatic signal setting according to the path
 ): { type: "plan" | "result"; id: string; steps: LinkedListItem[][] } => {
   if (steps.length > 1) {
     // Multi-step operation, requires switching - only planning and awaiting step confirmations
@@ -122,6 +125,8 @@ export const setPath = (
       setNode(sourceNode, targetNode);
       setNode(targetNode, sourceNode);
     });
+
+    activePaths.push(steps[0]);
 
     return {
       // semi-placeholder response, nothing to return from a single-step operation
