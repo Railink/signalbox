@@ -1,13 +1,6 @@
 import { Shape, Svg } from "@svgdotjs/svg.js";
+import { RailSwitch, RailWaypoint, RailSignal, RailNode, SwitchNodeState } from "common/config/config";
 import { LinkedListItem } from "dijkstra-calculator";
-import {
-  RailNode,
-  RailSignal,
-  RailSwitch,
-  RailWaypoint,
-  StationConfig,
-  SwitchNodeState,
-} from "../config";
 
 const sizeFactor = 50;
 const pointSize = 15;

@@ -1,4 +1,4 @@
-import { RailSwitch, RailWaypoint, StationConfig } from "../config/config";
+import { RailSwitch, RailWaypoint, StationConfig } from "./config";
 import { controllers } from "..";
 import { Controller } from "../controllers/Controller";
 

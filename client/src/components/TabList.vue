@@ -5,7 +5,7 @@
                 :class="`bg-panel ${active === element.page ? 'active' : null}`"
                 :key="element.toString()"
                 v-for="element in elements"
-                @click="$router.push(element.page.toString())"
+                @click="router.push(element.page.toString())"
             >
                 {{ element.name }}
             </li>
@@ -15,7 +15,10 @@
 </template>
 
 <script setup lang="ts">
-import { RouteLocationRaw } from "vue-router";
+import { watch } from "vue";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
 
 const props = defineProps({
     elements: {

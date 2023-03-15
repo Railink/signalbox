@@ -5,11 +5,11 @@
 <script setup lang="ts">
 import StationPanel, { PanelInjection } from "../dashboard/panel";
 import axios from "axios";
-import { watch } from "fs";
-import { inject, onMounted } from "vue";
-import { RailSignal, RailSwitch, RailWaypoint, SwitchNodeState } from "../config";
+import { RailSignal, RailSwitch, RailWaypoint, SwitchNodeState } from "../../../common/config/config";
 import { LinkedListItem } from "dijkstra-calculator";
 import { Svg } from "@svgdotjs/svg.js";
+import { inject, onMounted, watch } from "vue";
+import { usePaths } from "../composables/panelStates";
 
 const props = defineProps({
     lineColor: {
@@ -82,10 +82,10 @@ onMounted(async () => {
     canvas.viewbox(0, 0, newWidth, newHeight);
 });
 
-// watch(
-//     () => usePaths(),
-//     (_, newValue) => {
-//         panelInjection?.panel().updatePaths(newValue.value);
-//     }
-// );
+watch(
+    () => usePaths(),
+    (_, newValue) => {
+        panelInjection?.panel().updatePaths(newValue.value);
+    }
+);
 </script>

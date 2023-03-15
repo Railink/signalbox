@@ -11,6 +11,7 @@
         "@types/koa-static": "^4.0.2",
         "@types/koa__router": "^12.0.0",
         "@types/node": "8.10.66",
+        "@types/vue-router": "^2.0.0",
         "@types/winston": "^2.4.4",
         "@types/xml2js": "^0.4.11",
         "@vitejs/plugin-vue": "^4.0.0",
@@ -33,6 +34,7 @@
         "koa-bodyparser": "^4.3.0",
         "koa-static": "^5.0.0",
         "typecheck.macro": "^0.7.3",
+        "vue-router": "4",
         "winston": "^3.8.2",
         "xml2js": "^0.4.23"
     },

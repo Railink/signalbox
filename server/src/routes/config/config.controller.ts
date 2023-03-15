@@ -1,5 +1,5 @@
 import Router from "@koa/router";
-import { AppContext } from "../../config/config";
+import { AppContext } from "../../../../common/config/config";
 import { DefaultState } from "koa";
 
 const configRoutes = (router: Router<DefaultState, AppContext>) => {

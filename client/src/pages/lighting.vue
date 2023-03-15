@@ -22,20 +22,22 @@
 </template>
 
 <script setup lang="ts">
-const config = useRuntimeConfig();
-const fetchLighting = () =>
-    $fetch<API.StationLighting[]>(`${config.baseURL}/lighting`);
+import axios from 'axios';
+import { LightingNode } from 'common/config/config';
+import { config } from 'process';
+import { ref, onMounted } from 'vue';
 
-let lightingState = ref<API.StationLighting[]>([]);
+const fetchLighting = async () =>
+    (await axios.get<LightingNode[]>(`${window.location.host}/lighting`)).data;
+
+let lightingState = ref<LightingNode[]>([]);
 
 onMounted(async () => {
     lightingState.value = await fetchLighting();
 });
 
 const toggleLight = async (name: string, to: "on" | "off") => {
-    await $fetch(`${config.baseURL}/lighting/${name}/${to}`, {
-        method: "POST",
-    });
+    await axios.post(`${window.location.host}/lighting/${name}/${to}`);
     lightingState.value = await fetchLighting();
 };
 </script>

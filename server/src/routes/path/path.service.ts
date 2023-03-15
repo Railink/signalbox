@@ -4,12 +4,12 @@ import {
   RailWaypoint,
   StationConfig,
   SwitchState,
-} from "../../config/config";
+} from "../../../../common/config/config";
 import { randomBytes } from "crypto";
 import { DijkstraCalculator } from "dijkstra-calculator";
 import { LinkedListItem } from "dijkstra-calculator/build/main/lib";
-import { getController, getNode } from "../../config/config.util";
-import { Controller } from "../../controllers/Controller";
+import { getController, getNode } from "../../../../common/config/config.util";
+import { Controller } from "../../../../common/controllers/Controller";
 
 type RailNode = RailSwitch | RailWaypoint | null;
 

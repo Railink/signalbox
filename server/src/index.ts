@@ -11,12 +11,12 @@ import {
   RailSignal,
   RailSwitch,
   RailWaypoint,
-} from "./config/config";
+} from "../../common/config/config";
 import Router from "@koa/router";
 import configRoutes from "./routes/config/config.controller";
-import verifySwitches from "./config/switches";
-import verifyAppConfig from "./config/app";
-import { Controller, controllerCreators } from "./controllers/Controller";
+import verifySwitches from "../../common/config/switches";
+import verifyAppConfig from "../../common/config/app";
+import { Controller, controllerCreators } from "../../common/controllers/Controller";
 import pathRoutes from "./routes/path/path.controller";
 import bodyParser from "koa-bodyparser";
 

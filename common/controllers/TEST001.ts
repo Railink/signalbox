@@ -1,6 +1,6 @@
 import { ExpanderEnvironmentVariable } from "../config/config";
 import { isNumber } from "util";
-import { logger } from "..";
+import { logger } from "../../server/src";
 import { Controller } from "./Controller";
 
 export default class TEST001 implements Controller {

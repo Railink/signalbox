@@ -1,3 +1,4 @@
+import { LinkedListItem } from "dijkstra-calculator";
 import { reactive, ref } from "vue";
 
-// export const usePaths = () => reactive<string[][]>('paths', () => [])
+export const usePaths = () => ref<LinkedListItem[][]>([])

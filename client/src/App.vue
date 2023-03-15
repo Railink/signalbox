@@ -4,7 +4,7 @@
             <Panel way-color="#3498db" line-color="#000" path-color="#be123c" id="dashboard-panel"
                 class="col-span-12 panel" ref="mainPanel" />
             <div class="content-wrapper bg-panel">
-                <TabList :elements="pages" :active="$route.path" />
+                <TabList :elements="pages" :active="''" />
                 <div class="m-6">
                     <slot />
                 </div>
@@ -14,8 +14,6 @@
 </template>
 
 <script setup lang="ts">
-import { PanelInjection } from './dashboard/panel';
-
 const pages = [
     {
         name: "Przebiegi",

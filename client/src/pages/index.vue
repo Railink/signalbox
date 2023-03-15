@@ -55,9 +55,9 @@
                         <option
                             v-for="point in pointList"
                             :value="point"
-                            :key="point"
+                            :key="point.id"
                         >
-                            {{ point }}
+                            {{ point.name ?? point.id }}
                         </option>
                     </select>
                     <Icon
@@ -68,9 +68,9 @@
                         <option
                             v-for="point in pointList"
                             :value="point"
-                            :key="point"
+                            :key="point.id"
                         >
-                            {{ point }}
+                            {{ point.name ?? point.id }}
                         </option>
                     </select>
                     <button type="submit">Ustaw</button>
@@ -103,9 +103,9 @@
                         <option
                             v-for="point in pointList"
                             :value="point"
-                            :key="point"
+                            :key="point.id"
                         >
-                            {{ point }}
+                            {{ point.name ?? point.id }}
                         </option>
                     </select>
                     <button type="submit">Ustaw</button>
@@ -170,24 +170,46 @@
 
 <script setup lang="ts">
 import axios from "axios";
-import { sign } from "crypto";
+import {
+    SwitchNodeState,
+    RailSwitch,
+    RailWaypoint,
+    RailSignal,
+} from "common/config/config";
 import { LinkedListItem } from "dijkstra-calculator";
+import { config } from "process";
 import { ref, inject, reactive, onMounted } from "vue";
 import { PanelInjection } from "../dashboard/panel";
-import { SwitchNodeState, RailSwitch, RailWaypoint, RailSignal } from "../config";
 
-type CheckedPath = { length: number; queue: string[][] };
+type CheckedPath = { length: number; queue: LinkedListItem[][] };
 
 const fetchStationStatus = async () =>
-    (await axios.get<SwitchNodeState[]>(`${window.location.host}/api/switches`)).data;
+    (await axios.get<SwitchNodeState[]>(`${window.location.host}/api/switches`))
+        .data;
 const fetchCurrentPaths = async () =>
-    (await axios.get<LinkedListItem[][]>(`${window.location.host}/api/path/active`)).data;
+    (
+        await axios.get<LinkedListItem[][]>(
+            `${window.location.host}/api/path/active`
+        )
+    ).data;
 const fetchSwitchConfig = async () =>
-    (await axios.get<RailSwitch[]>(`${window.location.host}/api/config/switches`)).data;
+    (
+        await axios.get<RailSwitch[]>(
+            `${window.location.host}/api/config/switches`
+        )
+    ).data;
 const fetchWaypointConfig = async () =>
-    (await axios.get<RailWaypoint[]>(`${window.location.host}/api/config/waypoints`)).data;
+    (
+        await axios.get<RailWaypoint[]>(
+            `${window.location.host}/api/config/waypoints`
+        )
+    ).data;
 const fetchSignalConfig = async () =>
-    (await axios.get<RailSignal[]>(`${window.location.host}/api/config/signals`)).data;
+    (
+        await axios.get<RailSignal[]>(
+            `${window.location.host}/api/config/signals`
+        )
+    ).data;
 
 const pointList = ref<RailWaypoint[]>([]);
 const signalList = ref<RailSignal[]>([]);
@@ -208,13 +230,10 @@ onMounted(async () => {
 });
 
 const checkPath = async (from: string, to: string): Promise<CheckedPath> => {
-    const checkedPath = await $fetch<CheckedPath>(
-        `${config.baseURL}/check_path/${from}/${to}`,
-        {
-            method: "POST",
-        }
+    const checkedPath = await axios.post<CheckedPath>(
+        `${window.location.host}/check_path/${from}/${to}`
     );
-    return checkedPath;
+    return checkedPath.data;
 };
 
 const confirmPath = async () => {
@@ -233,29 +252,26 @@ const submitPath = async (checkedPath: CheckedPath) => {
     pathConfirmationModalVisible.value = false;
     if (!startNode.value || !finishNode.value) return;
     if (checkedPath.length < 2) {
-        const submittedPath = await $fetch<{ queue_id: number }>(
-            `${config.baseURL}/path/${startNode.value}/${finishNode.value}`,
-            {
-                method: "POST",
-            }
+        const submittedPath = await axios.post<{ queue_id: number }>(
+            `${window.location.host}/path/${startNode.value}/${finishNode.value}`
         );
 
-        $fetch(`${config.baseURL}/steps/${submittedPath.queue_id}/next`, {
-            method: "POST",
-        }).then(async () => {
-            panelInjection?.panel().updatePanel(await fetchSwitches());
-            panelInjection?.panel().updatePaths(checkedPath.queue);
-        });
+        axios
+            .post(
+                `${window.location.host}/steps/${submittedPath.data.queue_id}/next`
+            )
+            .then(async () => {
+                panelInjection?.panel().updatePanel(await fetchSwitches());
+                panelInjection?.panel().updatePaths(checkedPath.queue);
+            });
     }
 
-    activePaths.value = [await fetchCurrentPaths()];
+    activePaths.value = await fetchCurrentPaths();
 };
 
 const resetPath = async () => {
-    await $fetch(`${config.baseURL}/resetPath`, {
-        method: "POST",
-    });
-    await $fetch(`${config.baseURL}/switches`).then(async () => {
+    await axios.post(`${window.location.host}/resetPath`);
+    await axios.get(`${window.location.host}/switches`).then(async () => {
         panelInjection?.panel().updatePanel(await fetchSwitches());
         panelInjection?.panel().updatePaths([]);
     });
@@ -276,9 +292,7 @@ const setSignal = async () => {
 };
 
 const resetSignal = async (signal: number) => {
-    await $fetch(`${config.baseURL}/signals/close/${signal}`, {
-        method: "POST",
-    });
+    await axios.post(`${window.location.host}/signals/close/${signal}`);
     signalList.value = await fetchSignalConfig();
 };
 </script>

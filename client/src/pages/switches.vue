@@ -27,14 +27,17 @@
 </template>
 
 <script setup lang="ts">
-import { PanelInjection } from "~~/dashboard/panel";
+import axios from "axios";
+import { RailSwitch } from "common/config/config";
+import { config } from "process";
+import { inject, ref, onMounted } from "vue";
+import { PanelInjection } from "../dashboard/panel";
 
-const config = useRuntimeConfig();
 const panelInjection = inject<PanelInjection>("dashboard-panel");
-const fetchSwitches = () =>
-    $fetch<API.SwitchState[]>(`${config.baseURL}/switches`);
+const fetchSwitches = async () =>
+    (await axios.get<RailSwitch[]>(`${window.location.host}/switches`)).data;
 
-let switchState = ref<API.SwitchState[]>([]);
+let switchState = ref<RailSwitch[]>([]);
 
 onMounted(async () => {
     switchState.value = await fetchSwitches();
@@ -43,16 +46,22 @@ onMounted(async () => {
 const isLocked = (switchId: number) => {
     return !!panelInjection
         ?.panel()
-        .currPaths.find((p) => p.includes(switchId.toString()));
+        .currPaths.find(
+            (p) =>
+                !!p.find(
+                    (s) =>
+                        s.source === switchId.toString() ||
+                        s.target === switchId.toString()
+                )
+        );
 };
 
 const toggleSwitch = async (switchId: number, to: number) => {
     if (isLocked(switchId)) return;
-    const switched = await $fetch<API.SwitchState[]>(
-        `${config.baseURL}/switches/${to == 0 ? "minus" : "plus"}/${switchId}`,
-        {
-            method: "POST",
-        }
+    const switched = await axios.post<RailSwitch[]>(
+        `${window.location.host}/switches/${
+            to == 0 ? "minus" : "plus"
+        }/${switchId}`
     );
     switchState.value = await fetchSwitches();
     await panelInjection?.panel().updatePanel(switchState.value);
