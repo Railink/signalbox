@@ -5,13 +5,13 @@ export interface RailWaypoint {
     name: string;
     position: Position;
     neighbors: {
-      left: {
-        node: number;
-        cost: number;
-      } | null;
-      right: {
-        node: number;
-        cost: number;
-      } | null;
+        left: {
+            node: number;
+            cost: number;
+        } | null;
+        right: {
+            node: number;
+            cost: number;
+        } | null;
     };
-  }
+}

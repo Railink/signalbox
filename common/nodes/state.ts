@@ -2,14 +2,14 @@ export enum PinState {
     HIGH,
     LOW,
     UNKNOWN,
-  }
-  
-  export enum SwitchState {
+}
+
+export enum SwitchState {
     PLUS,
     MINUS,
     UNKNOWN,
-  }
-  
-  export interface NodeState {
+}
+
+export interface NodeState {
     state: number;
-  }
+}

@@ -4,4 +4,4 @@ export interface LightingNode {
     name: string;
     id: number;
     pins: PinSignal[];
-  }
+}

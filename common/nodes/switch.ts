@@ -8,15 +8,15 @@ export interface RailSwitch {
     plus: RailSwitchDirection;
     minus: RailSwitchDirection;
     back: {
-      node: number;
-      cost: number;
+        node: number;
+        cost: number;
     };
-  }
+}
 
-  export interface RailSwitchDirection {
+export interface RailSwitchDirection {
     node: number;
     cost: number;
     pin: PinSignal;
-  }
+}
 
-  export type RailNode = RailSwitch | RailWaypoint;
+export type RailNode = RailSwitch | RailWaypoint;

@@ -7,10 +7,10 @@ export interface RailSignal {
     aspects: SignalAspect[];
     switchFront: number;
     position: Position;
-  }
-  
-  export interface SignalAspect {
+}
+
+export interface SignalAspect {
     name: string;
     id: number;
     pins: PinSignal[];
-  }
+}
