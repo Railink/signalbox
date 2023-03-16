@@ -308,7 +308,7 @@ section {
 }
 
 select {
-    @apply bg-field border-darker-panel border-2 rounded-lg py-2 px-2;
+    @apply bg-field border-darker-panel border-2 rounded-lg py-2 px-2 w-24;
 }
 
 button[type="submit"] {

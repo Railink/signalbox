@@ -173,14 +173,6 @@ class StationPanel {
         this.statusNodes = [];
         this.switches.forEach((s) => {
             if (!s.position) return;
-            this.canvas
-                ?.circle(pointSize)
-                .fill(this.wayColor)
-                .move(
-                    s.position.x * sizeFactor - pointSize / 2,
-                    s.position.y * sizeFactor - pointSize / 2
-                )
-                .attr("onclick", "alert('s')");
 
             const state = switchState.find((st) => st.id === s.id);
             const neighbor = state?.state === 0 ? s.minus.node : s.plus.node; // SwitchState.MINUS
@@ -210,7 +202,16 @@ class StationPanel {
                     width: pointSize + 0.1,
                     linecap: "round",
                 })
-                .attr("onclick", "a()");
+                .attr("onclick", "alert('ss')");
+
+            this.canvas
+                ?.circle(pointSize)
+                .fill(state.state === 2 ? this.errorColor : this.wayColor)
+                .move(
+                    s.position.x * sizeFactor - pointSize / 2,
+                    s.position.y * sizeFactor - pointSize / 2
+                )
+                .attr("onclick", "alert('s')");
 
             if (line) {
                 this.statusNodes.push(line);

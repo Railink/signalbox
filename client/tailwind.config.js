@@ -3,12 +3,7 @@ const colors = require("tailwindcss/colors");
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-    content: [
-        "./components/**/*.{js,vue,ts}",
-        "./views/**/*.vue",
-        "./plugins/**/*.{js,ts}",
-        "./**/*.vue",
-    ],
+    content: ["./src/**/*.{js,vue,ts}", "./src/App.vue"],
     theme: {
         extend: {
             colors: {
@@ -24,7 +19,7 @@ module.exports = {
                 "indicator-negative": colors.red[500],
                 "indicator-negative-darker": colors.red[600],
                 "indicator-caution": colors.yellow[500],
-                "indicator-caution-darker": colors.yellow[600]
+                "indicator-caution-darker": colors.yellow[600],
             },
             fontFamily: {
                 roboto: ["Roboto", ...defaultTheme.fontFamily.sans],
