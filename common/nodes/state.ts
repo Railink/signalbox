@@ -1,12 +1,12 @@
 export enum PinState {
-    HIGH,
     LOW,
+    HIGH,
     UNKNOWN,
 }
 
 export enum SwitchState {
-    PLUS,
     MINUS,
+    PLUS,
     UNKNOWN,
 }
 

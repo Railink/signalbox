@@ -5,6 +5,7 @@
 <script setup lang="ts">
 import { provide } from "vue";
 import StationPanel, { PanelInjection } from "../dashboard/panel";
+import { reactive } from "vue";
 
 const props = defineProps({
     id: {
@@ -21,6 +22,7 @@ let panel: StationPanel = reactive(
         [],
         [],
         [],
+        "",
         "",
         "",
         ""

@@ -1,7 +1,7 @@
-import { ExpanderEnvironmentVariable } from "../config/config";
+import { ExpanderEnvironmentVariable } from "@common/config/config";
+import { Controller } from "@common/controllers/Controller";
 import { isNumber } from "util";
-import { logger } from "../../server/src";
-import { Controller } from "./Controller";
+import { logger } from "..";
 
 export default class TEST001 implements Controller {
     private pinCount: number;
@@ -23,7 +23,7 @@ export default class TEST001 implements Controller {
     setValue(pin: number, value: any): void {
         if (pin < 0 || pin >= this.pinCount) throw new Error("Invalid pin!");
 
-        if (!isNumber(value)) throw new Error("Invalid value!");
+        if (!isNumber(+value)) throw new Error("Invalid value!");
 
         logger.info(`Setting pin ${pin} on controller to ${value}`);
         this.pins[pin] = value as number;

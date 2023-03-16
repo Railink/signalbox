@@ -5,6 +5,7 @@
     "author": "jas777",
     "license": "GNU",
     "devDependencies": {
+        "@iconify/vue": "^4.1.0",
         "@types/js-yaml": "^4.0.5",
         "@types/koa": "^2.13.5",
         "@types/koa-bodyparser": "^4.3.10",
@@ -33,15 +34,23 @@
         "koa": "^2.14.1",
         "koa-bodyparser": "^4.3.0",
         "koa-static": "^5.0.0",
+        "module-alias": "^2.2.2",
+        "sass": "^1.59.3",
         "typecheck.macro": "^0.7.3",
+        "usemodal-vue3": "^0.3.7",
         "vue-router": "4",
         "winston": "^3.8.2",
         "xml2js": "^0.4.23"
     },
     "scripts": {
-        "start": "cd server && node dist/index.js",
-        "dev": "cd server && node dist/index.js",
+        "start": "node dist/index.js",
+        "dev": "node dist/server/src/index.js",
         "build": "cd server && tsc -p ./tsconfig.json && cd ../client && vue-tsc && vite build",
+        "build:server": "cd server && tsc -p ./tsconfig.json",
+        "build:client": "cd ../client && vue-tsc && vite build",
         "preview": "cd client && vite preview"
+    },
+    "_moduleAliases": {
+        "@common": "server/dist/common"
     }
 }

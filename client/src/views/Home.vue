@@ -10,7 +10,7 @@
                     <h2>{{ startNode }}</h2>
                     <div>
                         <Icon
-                            name="uil:arrow-circle-right"
+                            icon="uil:arrow-circle-right"
                             class="text-3xl text-indicator-ambient"
                         />
                     </div>
@@ -22,7 +22,7 @@
                     </h2>
                     <div v-if="currentCheckedPath.length > 1">
                         <Icon
-                            name="uil:arrow-circle-right"
+                            icon="uil:arrow-circle-right"
                             class="text-3xl text-indicator-ambient"
                         />
                     </div>
@@ -54,20 +54,20 @@
                     <select name="start" id="start" v-model="startNode">
                         <option
                             v-for="point in pointList"
-                            :value="point"
+                            :value="point.id"
                             :key="point.id"
                         >
                             {{ point.name ?? point.id }}
                         </option>
                     </select>
                     <Icon
-                        name="uil:arrow-circle-right"
+                        icon="uil:arrow-circle-right"
                         class="text-3xl text-indicator-ambient"
                     />
                     <select name="finish" id="finish" v-model="finishNode">
                         <option
                             v-for="point in pointList"
-                            :value="point"
+                            :value="point.id"
                             :key="point.id"
                         >
                             {{ point.name ?? point.id }}
@@ -92,7 +92,7 @@
                         </option>
                     </select>
                     <Icon
-                        name="uil:arrow-circle-right"
+                        icon="uil:arrow-circle-right"
                         class="text-3xl text-indicator-ambient"
                     />
                     <select
@@ -120,13 +120,13 @@
             >
                 <button @click="resetPath()">
                     <Icon
-                        name="uil:link-broken"
+                        icon="uil:link-broken"
                         class="text-3xl text-indicator-negative hover:text-indicator-negative-darker"
                     />
                 </button>
                 <h2>{{ path[0] }}</h2>
                 <Icon
-                    name="uil:arrow-circle-right"
+                    icon="uil:arrow-circle-right"
                     class="text-3xl text-indicator-ambient"
                 />
                 <h2>{{ path[path.length - 1] }}</h2>
@@ -141,24 +141,24 @@
                 <div class="signal" v-for="signal in signalList">
                     <button @click="resetSignal(signal.id)">
                         <Icon
-                            name="uiw:stop"
+                            icon="uiw:stop"
                             class="text-3xl text-indicator-negative hover:text-indicator-negative-darker"
-                            v-if="signal.aspect === 3"
+                            v-if="signal.state === 3"
                         />
                         <Icon
-                            name="uiw:minus-circle"
+                            icon="uiw:minus-circle"
                             class="text-3xl text-indicator-caution hover:text-indicator-caution-darker"
-                            v-if="signal.aspect === 2"
+                            v-if="signal.state === 2"
                         />
                         <Icon
-                            name="uiw:down-circle"
+                            icon="uiw:down-circle"
                             class="text-3xl text-indicator-caution hover:text-indicator-caution-darker"
-                            v-if="signal.aspect === 1"
+                            v-if="signal.state === 1"
                         />
                         <Icon
-                            name="uiw:down-circle"
+                            icon="uiw:down-circle"
                             class="text-3xl text-indicator-positive hover:text-indicator-positive-darker"
-                            v-if="signal.aspect === 0"
+                            v-if="signal.state === 0"
                         />
                     </button>
                     <h2>{{ signal.id }}</h2>
@@ -169,50 +169,39 @@
 </template>
 
 <script setup lang="ts">
+import { RailSignal } from "@common/nodes/signal";
+import { NodeState } from "@common/nodes/state";
+import { RailSwitch } from "@common/nodes/switch";
+import { RailWaypoint } from "@common/nodes/waypoint";
 import axios from "axios";
-import {
-    SwitchNodeState,
-    RailSwitch,
-    RailWaypoint,
-    RailSignal,
-} from "common/config/config";
-import { LinkedListItem } from "dijkstra-calculator";
-import { config } from "process";
-import { ref, inject, reactive, onMounted } from "vue";
+import { useBaseURL } from "../composables/baseURL";
 import { PanelInjection } from "../dashboard/panel";
+import { LinkedListItem } from "dijkstra-calculator";
+import { Icon } from "@iconify/vue";
+import { ref, inject, reactive, onMounted } from "vue";
+import Modal from "../components/Modal.vue";
 
 type CheckedPath = { length: number; queue: LinkedListItem[][] };
 
-const fetchStationStatus = async () =>
-    (await axios.get<SwitchNodeState[]>(`${window.location.host}/api/switches`))
-        .data;
+const fetchSwitches = async () =>
+    (
+        await axios.get<(RailSwitch & NodeState)[]>(
+            `${useBaseURL()}/state/switches`
+        )
+    ).data;
+const fetchSignals = async () =>
+    (
+        await axios.get<(RailSignal & NodeState)[]>(
+            `${useBaseURL()}/state/signals`
+        )
+    ).data;
 const fetchCurrentPaths = async () =>
-    (
-        await axios.get<LinkedListItem[][]>(
-            `${window.location.host}/api/path/active`
-        )
-    ).data;
-const fetchSwitchConfig = async () =>
-    (
-        await axios.get<RailSwitch[]>(
-            `${window.location.host}/api/config/switches`
-        )
-    ).data;
+    (await axios.get<LinkedListItem[][]>(`${useBaseURL()}/path/active`)).data;
 const fetchWaypointConfig = async () =>
-    (
-        await axios.get<RailWaypoint[]>(
-            `${window.location.host}/api/config/waypoints`
-        )
-    ).data;
-const fetchSignalConfig = async () =>
-    (
-        await axios.get<RailSignal[]>(
-            `${window.location.host}/api/config/signals`
-        )
-    ).data;
+    (await axios.get<RailWaypoint[]>(`${useBaseURL()}/config/waypoints`)).data;
 
 const pointList = ref<RailWaypoint[]>([]);
-const signalList = ref<RailSignal[]>([]);
+const signalList = ref<(RailSignal & NodeState)[]>([]);
 const startNode = ref<number>();
 const finishNode = ref<number>();
 const selectedSignal = ref<number>();
@@ -226,12 +215,12 @@ let currentCheckedPath = reactive<CheckedPath>({ length: 0, queue: [] });
 onMounted(async () => {
     pointList.value = await fetchWaypointConfig();
     activePaths.value = await fetchCurrentPaths();
-    signalList.value = await fetchSignalConfig();
+    signalList.value = await fetchSignals();
 });
 
 const checkPath = async (from: string, to: string): Promise<CheckedPath> => {
     const checkedPath = await axios.post<CheckedPath>(
-        `${window.location.host}/check_path/${from}/${to}`
+        `${useBaseURL()}/path/new/${from}/${to}`
     );
     return checkedPath.data;
 };
@@ -253,13 +242,11 @@ const submitPath = async (checkedPath: CheckedPath) => {
     if (!startNode.value || !finishNode.value) return;
     if (checkedPath.length < 2) {
         const submittedPath = await axios.post<{ queue_id: number }>(
-            `${window.location.host}/path/${startNode.value}/${finishNode.value}`
+            `${useBaseURL()}/path/${startNode.value}/${finishNode.value}`
         );
 
         axios
-            .post(
-                `${window.location.host}/steps/${submittedPath.data.queue_id}/next`
-            )
+            .post(`${useBaseURL()}/steps/${submittedPath.data.queue_id}/next`)
             .then(async () => {
                 panelInjection?.panel().updatePanel(await fetchSwitches());
                 panelInjection?.panel().updatePaths(checkedPath.queue);
@@ -270,8 +257,8 @@ const submitPath = async (checkedPath: CheckedPath) => {
 };
 
 const resetPath = async () => {
-    await axios.post(`${window.location.host}/resetPath`);
-    await axios.get(`${window.location.host}/switches`).then(async () => {
+    await axios.post(`${useBaseURL()}/resetPath`);
+    await axios.get(`${useBaseURL()}/state/switches`).then(async () => {
         panelInjection?.panel().updatePanel(await fetchSwitches());
         panelInjection?.panel().updatePaths([]);
     });
@@ -282,18 +269,18 @@ const setSignal = async () => {
     const signal = selectedSignal.value;
     const to = signalDestination.value;
 
-    await axios.post(`${window.location.host}/signals/allow/${signal}`, {
+    await axios.post(`${useBaseURL()}/signals/allow/${signal}`, {
         method: "POST",
         body: {
             to,
         },
     });
-    signalList.value = await fetchSignalConfig();
+    signalList.value = await fetchSignals();
 };
 
 const resetSignal = async (signal: number) => {
-    await axios.post(`${window.location.host}/signals/close/${signal}`);
-    signalList.value = await fetchSignalConfig();
+    await axios.post(`${useBaseURL()}/signals/close/${signal}`);
+    signalList.value = await fetchSignals();
 };
 </script>
 

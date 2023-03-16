@@ -2,10 +2,10 @@
     <nav>
         <ul>
             <li
-                :class="`bg-panel ${active === element.page ? 'active' : null}`"
+                :class="`bg-panel ${route.path == element.page ? 'active' : null}`"
                 :key="element.toString()"
                 v-for="element in elements"
-                @click="router.push(element.page.toString())"
+                @click="router.push({ path: element.page.toString() })"
             >
                 {{ element.name }}
             </li>
@@ -15,26 +15,17 @@
 </template>
 
 <script setup lang="ts">
-import { watch } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 
 const router = useRouter();
+const route = useRoute();
 
-const props = defineProps({
+defineProps({
     elements: {
         type: Array<{ name: String; page: String }>,
         default: [],
-    },
-    active: {
-        type: String,
-        default: [],
-    },
+    }
 });
-
-watch(
-    () => props.active,
-    async (oldValue, newValue) => {}
-);
 </script>
 
 <style scoped lang="scss">

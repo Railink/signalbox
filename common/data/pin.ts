@@ -1,5 +1,8 @@
 export interface PinSignal {
     id: number;
     controller: number;
-    value: string;
+    value: {
+        enabled: string;
+        disabled: string;
+    };
 }

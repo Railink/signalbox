@@ -1,6 +1,6 @@
-import { AppConfig } from "./config";
+import { AppConfig } from "@common/config/config";
 import { isNumber } from "util";
-import { controllerCreators } from "../controllers/Controller";
+import { controllerCreators } from "../controllers/creators";
 
 export default function verifyAppConfig(appConfig: AppConfig) {
     if (!isNumber(appConfig.version) || appConfig.version < 0)

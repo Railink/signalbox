@@ -2,7 +2,7 @@ import Router from "@koa/router";
 import { DefaultState } from "koa";
 import { createPath, getActivePaths, setPath } from "./path.service";
 import { LinkedListItem } from "dijkstra-calculator";
-import { AppContext } from "../../../../common/config/config";
+import { AppContext } from "@common/config/config";
 
 const pathRoutes = (router: Router<DefaultState, AppContext>) => {
     router.post("/path/new/:a/:b", (ctx, _next) => {
@@ -24,10 +24,9 @@ const pathRoutes = (router: Router<DefaultState, AppContext>) => {
 
     router.post("/path/set", (ctx, _next) => {
         try {
-            console.log(ctx.request.body);
             ctx.body = setPath(
                 ctx.stationConfig,
-                [ctx.request.body as LinkedListItem[]],
+                ctx.request.body as LinkedListItem[],
                 false
             );
         } catch (e: any) {

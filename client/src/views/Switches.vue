@@ -27,17 +27,18 @@
 </template>
 
 <script setup lang="ts">
+import { NodeState } from "@common/nodes/state";
+import { RailSwitch } from "@common/nodes/switch";
 import axios from "axios";
-import { RailSwitch } from "common/config/config";
-import { config } from "process";
-import { inject, ref, onMounted } from "vue";
 import { PanelInjection } from "../dashboard/panel";
+import { inject, ref, onMounted } from "vue";
+import { useBaseURL } from "../composables/baseURL";
 
 const panelInjection = inject<PanelInjection>("dashboard-panel");
 const fetchSwitches = async () =>
-    (await axios.get<RailSwitch[]>(`${window.location.host}/switches`)).data;
+    (await axios.get<(RailSwitch & NodeState)[]>(`${useBaseURL()}/state/switches`)).data;
 
-let switchState = ref<RailSwitch[]>([]);
+let switchState = ref<(RailSwitch & NodeState)[]>([]);
 
 onMounted(async () => {
     switchState.value = await fetchSwitches();
@@ -59,7 +60,7 @@ const isLocked = (switchId: number) => {
 const toggleSwitch = async (switchId: number, to: number) => {
     if (isLocked(switchId)) return;
     const switched = await axios.post<RailSwitch[]>(
-        `${window.location.host}/switches/${
+        `${useBaseURL()}/switches/${
             to == 0 ? "minus" : "plus"
         }/${switchId}`
     );

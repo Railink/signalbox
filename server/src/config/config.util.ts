@@ -1,6 +1,8 @@
-import { RailSwitch, RailWaypoint, StationConfig } from "./config";
+import { StationConfig } from "@common/config/config";
+import { Controller } from "@common/controllers/Controller";
+import { RailSwitch } from "@common/nodes/switch";
+import { RailWaypoint } from "@common/nodes/waypoint";
 import { controllers } from "..";
-import { Controller } from "../controllers/Controller";
 
 interface NodePinConfiguration {
   controller: Controller;

@@ -4,9 +4,9 @@
             <Panel way-color="#3498db" line-color="#000" path-color="#be123c" id="dashboard-panel"
                 class="col-span-12 panel" ref="mainPanel" />
             <div class="content-wrapper bg-panel">
-                <TabList :elements="pages" :active="''" />
+                <TabList :elements="pages" />
                 <div class="m-6">
-                    <slot />
+                    <router-view />
                 </div>
             </div>
         </PanelContext>
@@ -14,6 +14,11 @@
 </template>
 
 <script setup lang="ts">
+import TabList from './components/TabList.vue';
+import Panel from './components/Panel.vue';
+import PanelContext from './components/PanelContext.vue';
+import { ref } from 'vue';
+
 const pages = [
     {
         name: "Przebiegi",

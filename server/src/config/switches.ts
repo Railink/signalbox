@@ -1,4 +1,4 @@
-import { RailSwitch } from "./config";
+import { RailSwitch } from "@common/nodes/switch";
 
 export default function verifySwitches(switches: RailSwitch[]) {
     switches.forEach((railSwitch) => {

@@ -5,11 +5,15 @@
 <script setup lang="ts">
 import StationPanel, { PanelInjection } from "../dashboard/panel";
 import axios from "axios";
-import { RailSignal, RailSwitch, RailWaypoint, SwitchNodeState } from "../../../common/config/config";
 import { LinkedListItem } from "dijkstra-calculator";
 import { Svg } from "@svgdotjs/svg.js";
 import { inject, onMounted, watch } from "vue";
 import { usePaths } from "../composables/panelStates";
+import { RailSignal } from "@common/nodes/signal";
+import { RailSwitch } from "@common/nodes/switch";
+import { RailWaypoint } from "@common/nodes/waypoint";
+import { NodeState } from "@common/nodes/state";
+import { useBaseURL } from "../composables/baseURL";
 
 const props = defineProps({
     lineColor: {
@@ -24,22 +28,26 @@ const props = defineProps({
         type: String,
         default: "#FF0000",
     },
+    errorColor: {
+        type: String,
+        default: "#FF9900",
+    },
     id: {
         type: String,
         default: "station-panel",
     },
 });
 
-const fetchStationStatus = async () =>
-    (await axios.get<SwitchNodeState[]>(`${window.location.host}/api/switches`)).data;
+const fetchSwitches = async () =>
+    (await axios.get<(RailSwitch & NodeState)[]>(`${useBaseURL()}/state/switches`)).data;
 const fetchCurrentPaths = async () =>
-    (await axios.get<LinkedListItem[][]>(`${window.location.host}/api/path/active`)).data;
+    (await axios.get<LinkedListItem[][]>(`${useBaseURL()}/path/active`)).data;
 const fetchSwitchConfig = async () =>
-    (await axios.get<RailSwitch[]>(`${window.location.host}/api/config/switches`)).data;
+    (await axios.get<RailSwitch[]>(`${useBaseURL()}/config/switches`)).data;
 const fetchWaypointConfig = async () =>
-    (await axios.get<RailWaypoint[]>(`${window.location.host}/api/config/waypoints`)).data;
+    (await axios.get<RailWaypoint[]>(`${useBaseURL()}/config/waypoints`)).data;
 const fetchSignalConfig = async () =>
-    (await axios.get<RailSignal[]>(`${window.location.host}/api/config/signals`)).data;
+    (await axios.get<RailSignal[]>(`${useBaseURL()}/config/signals`)).data;
 
 const panelInjection = inject<PanelInjection>(props.id);
 
@@ -53,7 +61,7 @@ onMounted(async () => {
     const switches = await fetchSwitchConfig();
     const waypoints = await fetchWaypointConfig();
     const signals = await fetchSignalConfig();
-    const switchState = await fetchStationStatus();
+    const switchState = await fetchSwitches();
 
     panelInjection?.updatePanel(
         new StationPanel(
@@ -63,7 +71,8 @@ onMounted(async () => {
             signals,
             props.lineColor,
             props.wayColor,
-            props.pathColor
+            props.pathColor,
+            props.errorColor
         )
     );
 
