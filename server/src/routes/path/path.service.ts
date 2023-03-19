@@ -21,7 +21,7 @@ export const createPath = (
     start: string,
     finish: string,
     stationConfig: StationConfig
-): LinkedListItem[] => {
+): LinkedListItem[][] => {
     const nodes = [
         ...stationConfig.switches.map((s) => s.id.toString()),
         ...stationConfig.waypoints.map((wp) => wp.id.toString()),
@@ -73,7 +73,10 @@ export const createPath = (
         }
     });
 
-    return graph.calculateShortestPathAsLinkedListResult(start, finish);
+    return splitPathOnDirectionChange(
+        stationConfig,
+        graph.calculateShortestPathAsLinkedListResult(start, finish)
+    );
 };
 
 const validatePath = (
@@ -86,13 +89,14 @@ const validatePath = (
         const sourceNode = getNode(step.source, stationConfig);
         const targetNode = getNode(step.target, stationConfig);
 
-        if (!targetNode?.position || !sourceNode?.position) throw new Error("Invalid node position!");
+        if (!targetNode?.position || !sourceNode?.position)
+            throw new Error("Invalid node position!");
 
         if (targetNode?.position.x < sourceNode?.position.x) {
-          wholePath.push(currStep);
-          currStep = [step];
+            wholePath.push(currStep);
+            currStep = [step];
         } else {
-          currStep.push(step);
+            currStep.push(step);
         }
     });
 
@@ -175,4 +179,35 @@ export const setPath = (
             steps: [steps],
         };
     }
+};
+
+const splitPathOnDirectionChange = (
+    stationConfig: StationConfig,
+    path: LinkedListItem[]
+) => {
+    const finalPath: LinkedListItem[][] = [];
+    let currentStep: LinkedListItem[] = [];
+
+    path.forEach((step, i) => {
+        const prevNode =
+            i === 0 ? null : getNode(path[i - 1].source, stationConfig);
+        const currNode = getNode(step.source, stationConfig);
+        const nextNode = getNode(step.target, stationConfig);
+        if (prevNode && nextNode && currNode) {
+            if (
+                (prevNode.position.x > currNode.position.x &&
+                    nextNode.position.x > currNode.position.x) ||
+                (prevNode.position.x < currNode.position.x &&
+                    nextNode.position.x < currNode.position.x)
+            ) {
+                finalPath.push(currentStep);
+                currentStep = [];
+            }
+        }
+        currentStep.push(step);
+    });
+
+    finalPath.push(currentStep);
+
+    return finalPath;
 };

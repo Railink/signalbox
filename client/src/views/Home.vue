@@ -181,7 +181,7 @@ import { Icon } from "@iconify/vue";
 import { ref, inject, reactive, onMounted } from "vue";
 import Modal from "../components/Modal.vue";
 
-type CheckedPath = { length: number; queue: LinkedListItem[][] };
+type CheckedPath = LinkedListItem[][];
 
 const fetchSwitches = async () =>
     (
@@ -210,7 +210,7 @@ const activePaths = ref<LinkedListItem[][]>([]);
 const panelInjection = inject<PanelInjection>("dashboard-panel");
 
 const pathConfirmationModalVisible = ref(false);
-let currentCheckedPath = reactive<CheckedPath>({ length: 0, queue: [] });
+let currentCheckedPath = ref<CheckedPath>([]);
 
 onMounted(async () => {
     pointList.value = await fetchWaypointConfig();
@@ -233,7 +233,7 @@ const confirmPath = async () => {
         finishNode.value.toString()
     );
 
-    currentCheckedPath = checkedPath;
+    currentCheckedPath.value = checkedPath;
     pathConfirmationModalVisible.value = true;
 };
 
@@ -249,7 +249,7 @@ const submitPath = async (checkedPath: CheckedPath) => {
             .post(`${useBaseURL()}/steps/${submittedPath.data.queue_id}/next`)
             .then(async () => {
                 panelInjection?.panel().updatePanel(await fetchSwitches());
-                panelInjection?.panel().updatePaths(checkedPath.queue);
+                panelInjection?.panel().updatePaths(checkedPath);
             });
     }
 

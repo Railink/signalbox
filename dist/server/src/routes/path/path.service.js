@@ -38,7 +38,7 @@ const createPath = (start, finish, stationConfig) => {
             graph.addEdge(pn.id.toString(), pn.minus.node.toString(), pn.minus.cost);
         }
     });
-    return graph.calculateShortestPathAsLinkedListResult(start, finish);
+    return splitPathOnDirectionChange(stationConfig, graph.calculateShortestPathAsLinkedListResult(start, finish));
 };
 exports.createPath = createPath;
 const validatePath = (stationConfig, steps) => {
@@ -118,3 +118,24 @@ const setPath = (stationConfig, steps, withSignals // TODO: Automatic signal set
     }
 };
 exports.setPath = setPath;
+const splitPathOnDirectionChange = (stationConfig, path) => {
+    const finalPath = [];
+    let currentStep = [];
+    path.forEach((step, i) => {
+        const prevNode = i === 0 ? null : (0, config_util_1.getNode)(path[i - 1].source, stationConfig);
+        const currNode = (0, config_util_1.getNode)(step.source, stationConfig);
+        const nextNode = (0, config_util_1.getNode)(step.target, stationConfig);
+        if (prevNode && nextNode && currNode) {
+            if ((prevNode.position.x > currNode.position.x &&
+                nextNode.position.x > currNode.position.x) ||
+                (prevNode.position.x < currNode.position.x &&
+                    nextNode.position.x < currNode.position.x)) {
+                finalPath.push(currentStep);
+                currentStep = [];
+            }
+        }
+        currentStep.push(step);
+    });
+    finalPath.push(currentStep);
+    return finalPath;
+};
