@@ -13,10 +13,12 @@ type RailNode = RailSwitch | RailWaypoint | null;
 const isWaypoint = (node: RailWaypoint | RailSwitch): node is RailWaypoint =>
     Object.keys(node).includes("neighbors");
 
-const activePaths: LinkedListItem[][] = [];
-const queues: Map<string, LinkedListItem[][]> = new Map();
+const activePaths: LinkedListItem[][] = []; // Currently used paths
+const queues: Map<string, LinkedListItem[][]> = new Map(); // Switching queues
 
 export const getActivePaths = () => activePaths;
+export const getActiveQueues = () =>
+    Array.from(queues, ([id, steps]) => [id, steps]);
 
 export const createPath = (
     start: string,
@@ -95,7 +97,8 @@ const validatePath = (
         if (!targetNode?.position || !sourceNode?.position)
             throw new Error("Invalid node position!");
 
-        if (targetNode?.position.x < sourceNode?.position.x) { // direction change
+        if (targetNode?.position.x < sourceNode?.position.x) {
+            // direction change
             wholePath.push(currStep);
             currStep = [step];
         } else {
@@ -127,6 +130,18 @@ export const setPath = (
             steps: validatedPath,
         };
     } else {
+        if (
+            steps.find((step) =>
+                activePaths.find((p) => p.find((s) => s.source === step.source))
+            )
+        ) {
+            return {
+                type: "result",
+                id: "___COLLISION___",
+                steps: [],
+            };
+        }
+        
         steps.forEach((step) => {
             // Only 1 step present, thus, setting the path right away
             const sourceNode = getNode(step.source, stationConfig);

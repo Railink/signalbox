@@ -19,6 +19,7 @@ const state_controller_1 = __importDefault(require("./routes/state/state.control
 const app_1 = __importDefault(require("./config/app"));
 const switches_1 = __importDefault(require("./config/switches"));
 const creators_1 = require("./controllers/creators");
+const signals_1 = require("./signals");
 exports.CONFIG_PATH = path_1.default.join(__dirname, "..", "..", "..", "config");
 exports.CLIENT_PATH = path_1.default.join(__dirname, "..", "..", "..", "client", "dist");
 exports.logger = winston_1.default.createLogger({
@@ -47,7 +48,6 @@ try {
         js_yaml_1.default.load(fs_1.default.readFileSync(path_1.default.join(exports.CONFIG_PATH, "lighting.yaml"), "utf-8")),
         js_yaml_1.default.load(fs_1.default.readFileSync(path_1.default.join(exports.CONFIG_PATH, "waypoints.yaml"), "utf-8")),
     ];
-    console.log(waypointConfig);
     (0, switches_1.default)(switchConfig);
     (0, app_1.default)(appConfig);
     appConfig.gpio.expanders.forEach((expander, i) => {
@@ -65,6 +65,7 @@ try {
             lighting: lightingConfig || [],
             waypoints: waypointConfig || [],
         };
+        signalConfig.forEach(signal => (0, signals_1.setSignal)(signal, 0));
     }
 }
 catch (e) {

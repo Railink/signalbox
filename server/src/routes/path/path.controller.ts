@@ -18,10 +18,6 @@ const pathRoutes = (router: Router<DefaultState, AppContext>) => {
         }
     });
 
-    router.get("/path/active", (ctx, _next) => {
-        ctx.body = getActivePaths();
-    });
-
     router.post("/path/set", (ctx, _next) => {
         try {
             ctx.body = setPath(

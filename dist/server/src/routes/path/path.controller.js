@@ -11,9 +11,6 @@ const pathRoutes = (router) => {
             ctx.body = e.message;
         }
     });
-    router.get("/path/active", (ctx, _next) => {
-        ctx.body = (0, path_service_1.getActivePaths)();
-    });
     router.post("/path/set", (ctx, _next) => {
         try {
             ctx.body = (0, path_service_1.setPath)(ctx.stationConfig, ctx.request.body, false);

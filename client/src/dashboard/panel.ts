@@ -6,7 +6,7 @@ import { Shape, Svg } from "@svgdotjs/svg.js";
 import { LinkedListItem } from "dijkstra-calculator";
 
 const sizeFactor = 50;
-const pointSize = 15;
+const pointSize = 10;
 
 export interface PanelInjection {
     panel: () => StationPanel;
@@ -86,25 +86,22 @@ class StationPanel {
         this.signals.forEach((signal) => {
             if (!this.canvas) return;
             const right =
-                nodes.find((n) => n.id === signal.switchFront)?.position?.x!! >
+                nodes.find((n) => n.id === signal.switchFront)?.position?.x ?? 0 >
                 signal.position.x;
 
             this.canvas
                 .text(
                     right
-                        ? signal.id.toString() + "→"
-                        : "←" + signal.id.toString()
+                        ? signal.id.toString() + "►"
+                        : "◄" + signal.id.toString()
                 )
-                .move(signal.position.x * 50, signal.position.y * 49 - 31)
+                .move(signal.position.x * sizeFactor, signal.position.y * sizeFactor - (pointSize * 3))
                 .font({
-                    fill: "#000",
+                    fill: "#44403c",
                     family: "Calibri",
                     weight: 700,
                     size: "18px",
                 })
-                .attr({
-                    "text-decoration": "underline",
-                });
         });
         nodes.forEach((node) => {
             // Drawing lines between the points
@@ -124,17 +121,17 @@ class StationPanel {
                 this.canvas
                     ?.text(name)
                     .move(
-                        node.position.x * 50,
-                        node.position.y * 50 -
+                        node.position.x * sizeFactor,
+                        (node.position.y * sizeFactor) -
                             (this.getSwitchOrientation(node) === "down"
-                                ? pointSize * 2
+                                ? ((pointSize * 3))
                                 : -((pointSize * 2) / 3))
                     )
                     .font({
                         fill: "#3D3D3D",
                         family: "Calibri",
                         weight: 700,
-                        size: "20px",
+                        size: "18px",
                     });
             }
 

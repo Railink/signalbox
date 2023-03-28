@@ -41,7 +41,7 @@ const props = defineProps({
 const fetchSwitches = async () =>
     (await axios.get<(RailSwitch & NodeState)[]>(`${useBaseURL()}/state/switches`)).data;
 const fetchCurrentPaths = async () =>
-    (await axios.get<LinkedListItem[][]>(`${useBaseURL()}/path/active`)).data;
+    (await axios.get<LinkedListItem[][]>(`${useBaseURL()}/state/paths`)).data;
 const fetchSwitchConfig = async () =>
     (await axios.get<RailSwitch[]>(`${useBaseURL()}/config/switches`)).data;
 const fetchWaypointConfig = async () =>

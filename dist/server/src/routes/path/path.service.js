@@ -1,15 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setPath = exports.createPath = exports.getActivePaths = void 0;
+exports.setPath = exports.createPath = exports.getActiveQueues = exports.getActivePaths = void 0;
 const state_1 = require("@common/nodes/state");
 const crypto_1 = require("crypto");
 const dijkstra_calculator_1 = require("dijkstra-calculator");
 const config_util_1 = require("../../config/config.util");
 const isWaypoint = (node) => Object.keys(node).includes("neighbors");
-const activePaths = [];
-const queues = new Map();
+const activePaths = []; // Currently used paths
+const queues = new Map(); // Switching queues
 const getActivePaths = () => activePaths;
 exports.getActivePaths = getActivePaths;
+const getActiveQueues = () => Array.from(queues, ([id, steps]) => [id, steps]);
+exports.getActiveQueues = getActiveQueues;
 const createPath = (start, finish, stationConfig) => {
     const nodes = [
         ...stationConfig.switches.map((s) => s.id.toString()),
@@ -50,7 +52,8 @@ const validatePath = (stationConfig, steps) => {
         console.log(step, sourceNode, targetNode);
         if (!(targetNode === null || targetNode === void 0 ? void 0 : targetNode.position) || !(sourceNode === null || sourceNode === void 0 ? void 0 : sourceNode.position))
             throw new Error("Invalid node position!");
-        if ((targetNode === null || targetNode === void 0 ? void 0 : targetNode.position.x) < (sourceNode === null || sourceNode === void 0 ? void 0 : sourceNode.position.x)) { // direction change
+        if ((targetNode === null || targetNode === void 0 ? void 0 : targetNode.position.x) < (sourceNode === null || sourceNode === void 0 ? void 0 : sourceNode.position.x)) {
+            // direction change
             wholePath.push(currStep);
             currStep = [step];
         }
@@ -78,6 +81,13 @@ const setPath = (stationConfig, steps, withSignals // TODO: Automatic signal set
         };
     }
     else {
+        if (steps.find((step) => activePaths.find((p) => p.find((s) => s.source === step.source)))) {
+            return {
+                type: "result",
+                id: "___COLLISION___",
+                steps: [],
+            };
+        }
         steps.forEach((step) => {
             // Only 1 step present, thus, setting the path right away
             const sourceNode = (0, config_util_1.getNode)(step.source, stationConfig);

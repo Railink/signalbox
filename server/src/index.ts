@@ -19,6 +19,7 @@ import { RailWaypoint } from "@common/nodes/waypoint";
 import verifyAppConfig from "./config/app";
 import verifySwitches from "./config/switches";
 import { controllerCreators } from "./controllers/creators";
+import { setSignal } from "./signals";
 
 export const CONFIG_PATH = path.join(__dirname, "..", "..", "..", "config");
 export const CLIENT_PATH = path.join(
@@ -72,8 +73,6 @@ try {
         ) as RailWaypoint[],
     ];
 
-    console.log(waypointConfig);
-
     verifySwitches(switchConfig);
     verifyAppConfig(appConfig);
 
@@ -92,6 +91,8 @@ try {
             lighting: lightingConfig || [],
             waypoints: waypointConfig || [],
         };
+
+        signalConfig.forEach(signal => setSignal(signal, 0));
     }
 } catch (e: any) {
     logger.error((e as YAMLException).message);

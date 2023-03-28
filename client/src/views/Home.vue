@@ -44,6 +44,29 @@
                 </div>
             </article>
         </Modal>
+        <Modal
+            :show="pathCollisionModalVisible"
+            @close="pathCollisionModalVisible = false"
+        >
+            <article>
+                <h1 class="text-3xl font-semibold">
+                    Błąd ustawiania przebiegu
+                </h1>
+                <div class="flex items-center gap-2 text-2xl mt-3">
+                    <p>
+                        Ten przebieg koliduje z innym, zablokowanym przebiegiem
+                    </p>
+                </div>
+                <div class="path-confirmation -ml-2">
+                    <button
+                        class="cancel"
+                        @click="pathCollisionModalVisible = false"
+                    >
+                        Rozumiem
+                    </button>
+                </div>
+            </article>
+        </Modal>
         <div class="grid gap-8">
             <section>
                 <h1>Ustawianie przebiegu</h1>
@@ -143,7 +166,12 @@
                         <Icon
                             icon="uiw:stop"
                             class="text-3xl text-indicator-negative hover:text-indicator-negative-darker"
-                            v-if="signal.state === 3"
+                            v-if="signal.state === 0"
+                        />
+                        <Icon
+                            icon="uiw:down-circle"
+                            class="text-3xl text-indicator-positive hover:text-indicator-positive-darker"
+                            v-if="signal.state === 1"
                         />
                         <Icon
                             icon="uiw:minus-circle"
@@ -153,12 +181,12 @@
                         <Icon
                             icon="uiw:down-circle"
                             class="text-3xl text-indicator-caution hover:text-indicator-caution-darker"
-                            v-if="signal.state === 1"
+                            v-if="signal.state === 3"
                         />
                         <Icon
-                            icon="uiw:down-circle"
-                            class="text-3xl text-indicator-positive hover:text-indicator-positive-darker"
-                            v-if="signal.state === 0"
+                            icon="uiw:minus-circle"
+                            class="text-3xl text-slate-500 hover:text-indicator-positive-darker"
+                            v-if="signal.state === -1"
                         />
                     </button>
                     <h2>{{ signal.id }}</h2>
@@ -169,17 +197,17 @@
 </template>
 
 <script setup lang="ts">
+import axios from "axios";
+import { LinkedListItem } from "dijkstra-calculator";
+import { Icon } from "@iconify/vue";
+import { ref, inject, onMounted, reactive } from "vue";
 import { RailSignal } from "@common/nodes/signal";
 import { NodeState } from "@common/nodes/state";
 import { RailSwitch } from "@common/nodes/switch";
 import { RailWaypoint } from "@common/nodes/waypoint";
 import { PathSetResult } from "@common/path";
-import axios from "axios";
 import { useBaseURL } from "../composables/baseURL";
 import { PanelInjection } from "../dashboard/panel";
-import { LinkedListItem } from "dijkstra-calculator";
-import { Icon } from "@iconify/vue";
-import { ref, inject, onMounted, reactive } from "vue";
 import Modal from "../components/Modal.vue";
 
 type CheckedPath = LinkedListItem[][];
@@ -197,7 +225,7 @@ const fetchSignals = async () =>
         )
     ).data;
 const fetchCurrentPaths = async () =>
-    (await axios.get<LinkedListItem[][]>(`${useBaseURL()}/path/active`)).data;
+    (await axios.get<LinkedListItem[][]>(`${useBaseURL()}/state/paths`)).data;
 const fetchWaypointConfig = async () =>
     (await axios.get<RailWaypoint[]>(`${useBaseURL()}/config/waypoints`)).data;
 
@@ -213,7 +241,8 @@ const panelInjection = inject<PanelInjection>("dashboard-panel");
 const activeSwitching = reactive<Map<string, LinkedListItem[][]>>(new Map());
 
 const pathConfirmationModalVisible = ref(false);
-let currentCheckedPath = ref<CheckedPath>([]);
+const pathCollisionModalVisible = ref(false);
+const currentCheckedPath = ref<CheckedPath>([]);
 
 onMounted(async () => {
     pointList.value = await fetchWaypointConfig();
@@ -255,6 +284,11 @@ const submitPath = async (checkedPath: CheckedPath) => {
         if (activeSwitching.has(submittedPath.id)) return;
         activeSwitching.set(submittedPath.id, submittedPath.steps);
     } else {
+        if (submittedPath.id === "___COLLISION___") {
+            pathCollisionModalVisible.value = true;
+            return;
+        }
+
         activePaths.value.push(checkedPath[0]);
         panelInjection?.panel().updatePanel(await fetchSwitches());
         activePaths.value = await fetchCurrentPaths();
