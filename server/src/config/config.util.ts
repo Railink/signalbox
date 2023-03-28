@@ -13,6 +13,7 @@ export const getNode = (
   id: number | string,
   stationConfig: StationConfig
 ): RailWaypoint | RailSwitch | null => {
+  console.log(id, isNaN(+id));
   if (isNaN(+id)) return null;
   return (
     stationConfig.switches.find((s) => s.id === Number(id)) ??

@@ -6,6 +6,7 @@ import { randomBytes } from "crypto";
 import { DijkstraCalculator } from "dijkstra-calculator";
 import { LinkedListItem } from "dijkstra-calculator/build/main/lib";
 import { getNode, getController } from "../../config/config.util";
+import { PathSetResult } from "@common/path";
 
 type RailNode = RailSwitch | RailWaypoint | null;
 
@@ -89,10 +90,12 @@ const validatePath = (
         const sourceNode = getNode(step.source, stationConfig);
         const targetNode = getNode(step.target, stationConfig);
 
+        console.log(step, sourceNode, targetNode);
+
         if (!targetNode?.position || !sourceNode?.position)
             throw new Error("Invalid node position!");
 
-        if (targetNode?.position.x < sourceNode?.position.x) {
+        if (targetNode?.position.x < sourceNode?.position.x) { // direction change
             wholePath.push(currStep);
             currStep = [step];
         } else {
@@ -108,11 +111,11 @@ export const setPath = (
     stationConfig: StationConfig,
     steps: LinkedListItem[],
     withSignals: boolean // TODO: Automatic signal setting according to the path
-): { type: "plan" | "result"; id: string; steps: LinkedListItem[][] } => {
+): PathSetResult => {
     // Make sure `steps` exists and it's of the correct type
     if (!steps || steps.length < 1) throw new Error("Invalid steps!");
 
-    const validatedPath = validatePath(stationConfig, steps);
+    const validatedPath = splitPathOnDirectionChange(stationConfig, steps);
 
     if (validatedPath.length > 1) {
         // Multi-step operation, requires switching - only planning and awaiting step confirmations
@@ -150,7 +153,11 @@ export const setPath = (
                             );
                             controllerConfig.controller.setValue(
                                 controllerConfig.pin,
-                                source.plus.pin.value
+                                source.minus.pin.value.disabled
+                            );
+                            controllerConfig.controller.setValue(
+                                controllerConfig.pin,
+                                source.plus.pin.value.enabled
                             );
                             break;
                         case SwitchState.MINUS:
@@ -159,7 +166,11 @@ export const setPath = (
                             );
                             controllerConfig.controller.setValue(
                                 controllerConfig.pin,
-                                source.minus.pin.value
+                                source.plus.pin.value.disabled
+                            );
+                            controllerConfig.controller.setValue(
+                                controllerConfig.pin,
+                                source.minus.pin.value.enabled
                             );
                             break;
                     }

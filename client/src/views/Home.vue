@@ -124,12 +124,12 @@
                         class="text-3xl text-indicator-negative hover:text-indicator-negative-darker"
                     />
                 </button>
-                <h2>{{ path[0] }}</h2>
+                <h2>{{ path[0].source }}</h2>
                 <Icon
                     icon="uil:arrow-circle-right"
                     class="text-3xl text-indicator-ambient"
                 />
-                <h2>{{ path[path.length - 1] }}</h2>
+                <h2>{{ path[path.length - 1].target }}</h2>
             </div>
         </section>
         <section class="basis-1/3">
@@ -173,12 +173,13 @@ import { RailSignal } from "@common/nodes/signal";
 import { NodeState } from "@common/nodes/state";
 import { RailSwitch } from "@common/nodes/switch";
 import { RailWaypoint } from "@common/nodes/waypoint";
+import { PathSetResult } from "@common/path";
 import axios from "axios";
 import { useBaseURL } from "../composables/baseURL";
 import { PanelInjection } from "../dashboard/panel";
 import { LinkedListItem } from "dijkstra-calculator";
 import { Icon } from "@iconify/vue";
-import { ref, inject, reactive, onMounted } from "vue";
+import { ref, inject, onMounted, reactive } from "vue";
 import Modal from "../components/Modal.vue";
 
 type CheckedPath = LinkedListItem[][];
@@ -208,6 +209,8 @@ const selectedSignal = ref<number>();
 const signalDestination = ref<number>();
 const activePaths = ref<LinkedListItem[][]>([]);
 const panelInjection = inject<PanelInjection>("dashboard-panel");
+
+const activeSwitching = reactive<Map<string, LinkedListItem[][]>>(new Map());
 
 const pathConfirmationModalVisible = ref(false);
 let currentCheckedPath = ref<CheckedPath>([]);
@@ -240,20 +243,23 @@ const confirmPath = async () => {
 const submitPath = async (checkedPath: CheckedPath) => {
     pathConfirmationModalVisible.value = false;
     if (!startNode.value || !finishNode.value) return;
-    if (checkedPath.length < 2) {
-        const submittedPath = await axios.post<{ queue_id: number }>(
-            `${useBaseURL()}/path/${startNode.value}/${finishNode.value}`
-        );
 
-        axios
-            .post(`${useBaseURL()}/steps/${submittedPath.data.queue_id}/next`)
-            .then(async () => {
-                panelInjection?.panel().updatePanel(await fetchSwitches());
-                panelInjection?.panel().updatePaths(checkedPath);
-            });
+    let submittedPath = (
+        await axios.post<PathSetResult>(
+            `${useBaseURL()}/path/set`,
+            checkedPath.flat()
+        )
+    ).data;
+
+    if (submittedPath.type === "plan") {
+        if (activeSwitching.has(submittedPath.id)) return;
+        activeSwitching.set(submittedPath.id, submittedPath.steps);
+    } else {
+        activePaths.value.push(checkedPath[0]);
+        panelInjection?.panel().updatePanel(await fetchSwitches());
+        activePaths.value = await fetchCurrentPaths();
+        panelInjection?.panel().updatePaths(activePaths.value);
     }
-
-    activePaths.value = await fetchCurrentPaths();
 };
 
 const resetPath = async () => {

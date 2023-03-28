@@ -10,6 +10,8 @@ export const switchState = (switches: RailSwitch[]): (RailSwitch & NodeState)[] 
         const minusState = minusPinInfo.controller.getValue(minusPinInfo.pin) === sw.minus.pin.value.enabled;
         const plusState = plusPinInfo.controller.getValue(plusPinInfo.pin) === sw.plus.pin.value.enabled;
 
+        console.log(minusPinInfo.controller);
+
         let state = minusState === plusState ? SwitchState.UNKNOWN : minusState ? SwitchState.MINUS : SwitchState.PLUS;
 
         return {

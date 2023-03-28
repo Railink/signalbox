@@ -47,9 +47,10 @@ const validatePath = (stationConfig, steps) => {
     steps.forEach((step) => {
         const sourceNode = (0, config_util_1.getNode)(step.source, stationConfig);
         const targetNode = (0, config_util_1.getNode)(step.target, stationConfig);
+        console.log(step, sourceNode, targetNode);
         if (!(targetNode === null || targetNode === void 0 ? void 0 : targetNode.position) || !(sourceNode === null || sourceNode === void 0 ? void 0 : sourceNode.position))
             throw new Error("Invalid node position!");
-        if ((targetNode === null || targetNode === void 0 ? void 0 : targetNode.position.x) < (sourceNode === null || sourceNode === void 0 ? void 0 : sourceNode.position.x)) {
+        if ((targetNode === null || targetNode === void 0 ? void 0 : targetNode.position.x) < (sourceNode === null || sourceNode === void 0 ? void 0 : sourceNode.position.x)) { // direction change
             wholePath.push(currStep);
             currStep = [step];
         }
@@ -65,7 +66,7 @@ const setPath = (stationConfig, steps, withSignals // TODO: Automatic signal set
     // Make sure `steps` exists and it's of the correct type
     if (!steps || steps.length < 1)
         throw new Error("Invalid steps!");
-    const validatedPath = validatePath(stationConfig, steps);
+    const validatedPath = splitPathOnDirectionChange(stationConfig, steps);
     if (validatedPath.length > 1) {
         // Multi-step operation, requires switching - only planning and awaiting step confirmations
         const planId = (0, crypto_1.randomBytes)(20).toString("hex");
@@ -96,11 +97,13 @@ const setPath = (stationConfig, steps, withSignals // TODO: Automatic signal set
                     switch (state) {
                         case state_1.SwitchState.PLUS:
                             controllerConfig = (0, config_util_1.getController)(source.plus.pin.id);
-                            controllerConfig.controller.setValue(controllerConfig.pin, source.plus.pin.value);
+                            controllerConfig.controller.setValue(controllerConfig.pin, source.minus.pin.value.disabled);
+                            controllerConfig.controller.setValue(controllerConfig.pin, source.plus.pin.value.enabled);
                             break;
                         case state_1.SwitchState.MINUS:
                             controllerConfig = (0, config_util_1.getController)(source.minus.pin.id);
-                            controllerConfig.controller.setValue(controllerConfig.pin, source.minus.pin.value);
+                            controllerConfig.controller.setValue(controllerConfig.pin, source.plus.pin.value.disabled);
+                            controllerConfig.controller.setValue(controllerConfig.pin, source.minus.pin.value.enabled);
                             break;
                     }
                 }

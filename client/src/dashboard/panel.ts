@@ -175,14 +175,14 @@ class StationPanel {
             if (!s.position) return;
 
             const state = switchState.find((st) => st.id === s.id);
-            const neighbor = state?.state === 0 ? s.minus.node : s.plus.node; // SwitchState.MINUS
-
+            console.log(state);
             if (!state) return;
+            const neighbor = state.state === 0 ? s.minus.node : s.plus.node; // SwitchState.MINUS
 
             let neighborNode: RailNode | undefined;
 
             neighborNode = [...this.switches, ...this.waypoints].find(
-                (n) => n.id === neighbor
+                (n) => n.id == neighbor
             );
 
             if (!neighborNode || !neighborNode.position || !s.position) return;
