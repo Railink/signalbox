@@ -60,16 +60,6 @@ export const signalState = (
             )
         ) ?? [[0, 0, -1]])[0][2];
 
-        console.log(
-            aspectCombinations,
-            "AAA",
-            relevantPins,
-            "BBB",
-            currentPinState,
-            "CCC",
-            currentSignalState
-        );
-
         return {
             ...signal,
             state: currentSignalState as number,

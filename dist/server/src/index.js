@@ -19,7 +19,8 @@ const state_controller_1 = __importDefault(require("./routes/state/state.control
 const app_1 = __importDefault(require("./config/app"));
 const switches_1 = __importDefault(require("./config/switches"));
 const creators_1 = require("./controllers/creators");
-const signals_1 = require("./signals");
+const switches_2 = require("./switches");
+const state_1 = require("@common/nodes/state");
 exports.CONFIG_PATH = path_1.default.join(__dirname, "..", "..", "..", "config");
 exports.CLIENT_PATH = path_1.default.join(__dirname, "..", "..", "..", "client", "dist");
 exports.logger = winston_1.default.createLogger({
@@ -65,7 +66,7 @@ try {
             lighting: lightingConfig || [],
             waypoints: waypointConfig || [],
         };
-        signalConfig.forEach(signal => (0, signals_1.setSignal)(signal, 0));
+        switchConfig.forEach((railSwitch) => (0, switches_2.setSwitch)(railSwitch, state_1.SwitchState.MINUS));
     }
 }
 catch (e) {

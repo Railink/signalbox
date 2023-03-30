@@ -39,7 +39,6 @@ const signalState = (signals) => {
         });
         // All relevant pin states in the format of [[pin_num, pin_val, aspect_id]]
         const currentSignalState = ((_a = aspectCombinations.find((combo) => combo.every((pin) => currentPinState.some((ps) => ps[0] === pin[0] && ps[1] === pin[1])))) !== null && _a !== void 0 ? _a : [[0, 0, -1]])[0][2];
-        console.log(aspectCombinations, "AAA", relevantPins, "BBB", currentPinState, "CCC", currentSignalState);
         return {
             ...signal,
             state: currentSignalState,

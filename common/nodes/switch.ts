@@ -20,3 +20,7 @@ export interface RailSwitchDirection {
 }
 
 export type RailNode = RailSwitch | RailWaypoint;
+
+export const isRailSwitch = (node: RailNode): node is RailSwitch => {
+    return Object.keys(node).includes("plus") && Object.keys(node).includes("minus");
+}

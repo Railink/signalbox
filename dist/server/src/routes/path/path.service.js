@@ -5,6 +5,7 @@ const state_1 = require("@common/nodes/state");
 const crypto_1 = require("crypto");
 const dijkstra_calculator_1 = require("dijkstra-calculator");
 const config_util_1 = require("../../config/config.util");
+const switches_1 = require("../../switches");
 const isWaypoint = (node) => Object.keys(node).includes("neighbors");
 const activePaths = []; // Currently used paths
 const queues = new Map(); // Switching queues
@@ -103,19 +104,7 @@ const setPath = (stationConfig, steps, withSignals // TODO: Automatic signal set
                         : state_1.SwitchState.PLUS;
                     if (source.back.node === target.id)
                         return;
-                    let controllerConfig;
-                    switch (state) {
-                        case state_1.SwitchState.PLUS:
-                            controllerConfig = (0, config_util_1.getController)(source.plus.pin.id);
-                            controllerConfig.controller.setValue(controllerConfig.pin, source.minus.pin.value.disabled);
-                            controllerConfig.controller.setValue(controllerConfig.pin, source.plus.pin.value.enabled);
-                            break;
-                        case state_1.SwitchState.MINUS:
-                            controllerConfig = (0, config_util_1.getController)(source.minus.pin.id);
-                            controllerConfig.controller.setValue(controllerConfig.pin, source.plus.pin.value.disabled);
-                            controllerConfig.controller.setValue(controllerConfig.pin, source.minus.pin.value.enabled);
-                            break;
-                    }
+                    (0, switches_1.setSwitch)(source, state);
                 }
             };
             setNode(sourceNode, targetNode);

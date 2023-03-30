@@ -1,4 +1,5 @@
 import { Position } from "../config/config";
+import { RailSwitch } from "./switch";
 
 export interface RailWaypoint {
     id: number;
@@ -15,3 +16,7 @@ export interface RailWaypoint {
         } | null;
     };
 }
+
+export const isWaypoint = (
+    node: RailWaypoint | RailSwitch
+): node is RailWaypoint => Object.keys(node).includes("neighbors");

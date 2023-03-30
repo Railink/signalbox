@@ -20,6 +20,8 @@ import verifyAppConfig from "./config/app";
 import verifySwitches from "./config/switches";
 import { controllerCreators } from "./controllers/creators";
 import { setSignal } from "./signals";
+import { setSwitch } from "./switches";
+import { SwitchState } from "@common/nodes/state";
 
 export const CONFIG_PATH = path.join(__dirname, "..", "..", "..", "config");
 export const CLIENT_PATH = path.join(
@@ -92,7 +94,9 @@ try {
             waypoints: waypointConfig || [],
         };
 
-        signalConfig.forEach(signal => setSignal(signal, 0));
+        switchConfig.forEach((railSwitch) =>
+            setSwitch(railSwitch, SwitchState.MINUS)
+        );
     }
 } catch (e: any) {
     logger.error((e as YAMLException).message);
@@ -113,3 +117,4 @@ app.use(serve(CLIENT_PATH)) // Serve the dashboard
     .use(router.allowedMethods());
 
 app.listen(6969);
+logger.info(`Server listening on :6969`);
