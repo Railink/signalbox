@@ -1,25 +1,34 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setSwitch = void 0;
+exports.readSwitchState = exports.setSwitch = void 0;
 const state_1 = require("@common/nodes/state");
-const config_util_1 = require("../config/config.util");
+const io_1 = require("../io");
 const setSwitch = (railSwitch, switchState) => {
-    let controllerConfig = null;
+    const minusPin = railSwitch.minus.pin;
+    const plusPin = railSwitch.plus.pin;
     switch (switchState) {
-        case state_1.SwitchState.PLUS:
-            controllerConfig = (0, config_util_1.getController)(railSwitch.minus.pin.id);
-            controllerConfig.controller.setValue(controllerConfig.pin, railSwitch.minus.pin.value.disabled);
-            controllerConfig = (0, config_util_1.getController)(railSwitch.plus.pin.id);
-            controllerConfig.controller.setValue(controllerConfig.pin, railSwitch.plus.pin.value.enabled);
+        case state_1.SwitchState.PLUS: // Disable minus first, and then switch plus on
+            (0, io_1.writePin)(minusPin.id, minusPin.value.disabled);
+            (0, io_1.writePin)(plusPin.id, plusPin.value.enabled);
             break;
-        case state_1.SwitchState.MINUS:
-            controllerConfig = (0, config_util_1.getController)(railSwitch.plus.pin.id);
-            controllerConfig.controller.setValue(controllerConfig.pin, railSwitch.plus.pin.value.disabled);
-            controllerConfig = (0, config_util_1.getController)(railSwitch.minus.pin.id);
-            controllerConfig.controller.setValue(controllerConfig.pin, railSwitch.minus.pin.value.enabled);
+        case state_1.SwitchState.MINUS: // Disable plus first, and then switch minus on
+            (0, io_1.writePin)(plusPin.id, plusPin.value.disabled);
+            (0, io_1.writePin)(minusPin.id, minusPin.value.enabled);
             break;
-        default:
+        default: // Possibly SwitchState.UNKNOWN
             throw new Error("Invalid switch state!");
     }
 };
 exports.setSwitch = setSwitch;
+const readSwitchState = (railSwitch) => {
+    const minusPin = railSwitch.minus.pin;
+    const plusPin = railSwitch.plus.pin;
+    const minusState = (0, io_1.readPin)(minusPin.id);
+    const plusState = (0, io_1.readPin)(plusPin.id);
+    if (minusState === plusState)
+        return state_1.SwitchState.UNKNOWN;
+    return minusState === minusPin.value.enabled
+        ? state_1.SwitchState.MINUS
+        : state_1.SwitchState.PLUS;
+};
+exports.readSwitchState = readSwitchState;

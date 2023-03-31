@@ -22,6 +22,7 @@ import { controllerCreators } from "./controllers/creators";
 import { setSignal } from "./signals";
 import { setSwitch } from "./switches";
 import { SwitchState } from "@common/nodes/state";
+import signalRoutes from "./routes/signal/signal.controller";
 
 export const CONFIG_PATH = path.join(__dirname, "..", "..", "..", "config");
 export const CLIENT_PATH = path.join(
@@ -110,6 +111,7 @@ if (!app.context.appConfig) {
 configRoutes(router); // Register config-related routes
 stateRoutes(router); // Register node-state-related routes
 pathRoutes(router); // Register path-related routes
+signalRoutes(router);
 
 app.use(bodyParser());
 app.use(serve(CLIENT_PATH)) // Serve the dashboard

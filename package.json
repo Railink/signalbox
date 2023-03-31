@@ -51,6 +51,6 @@
         "preview": "cd client && vite preview"
     },
     "_moduleAliases": {
-        "@common": "server/dist/common"
+        "@common": "dist/common"
     }
 }

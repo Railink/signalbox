@@ -1,4 +1,5 @@
-import { RailSignal, SignalAspect } from "@common/nodes/signal";
+import { StationConfig } from "@common/config/config";
+import { RailSignal } from "@common/nodes/signal";
 import { getController } from "../config/config.util";
 
 export const setSignal = (signal: RailSignal, aspectId: number) => {
@@ -17,4 +18,9 @@ export const setSignal = (signal: RailSignal, aspectId: number) => {
         const { controller, pin } = getController(pinSignal.id);
         controller.setValue(pin, pinSignal.value.enabled);
     });
+}
+
+export const getRailSignal = (stationConfig: StationConfig, id: number | string) => {
+    const idNum = Number(id);
+    return stationConfig.signals.find(s => s.id === idNum);
 }

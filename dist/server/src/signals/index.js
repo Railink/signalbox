@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setSignal = void 0;
+exports.getRailSignal = exports.setSignal = void 0;
 const config_util_1 = require("../config/config.util");
 const setSignal = (signal, aspectId) => {
     const aspectToSet = signal.aspects.find(a => a.id === aspectId);
@@ -18,3 +18,8 @@ const setSignal = (signal, aspectId) => {
     });
 };
 exports.setSignal = setSignal;
+const getRailSignal = (stationConfig, id) => {
+    const idNum = Number(id);
+    return stationConfig.signals.find(s => s.id === idNum);
+};
+exports.getRailSignal = getRailSignal;

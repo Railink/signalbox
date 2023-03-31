@@ -21,6 +21,7 @@ const switches_1 = __importDefault(require("./config/switches"));
 const creators_1 = require("./controllers/creators");
 const switches_2 = require("./switches");
 const state_1 = require("@common/nodes/state");
+const signal_controller_1 = __importDefault(require("./routes/signal/signal.controller"));
 exports.CONFIG_PATH = path_1.default.join(__dirname, "..", "..", "..", "config");
 exports.CLIENT_PATH = path_1.default.join(__dirname, "..", "..", "..", "client", "dist");
 exports.logger = winston_1.default.createLogger({
@@ -79,8 +80,10 @@ if (!app.context.appConfig) {
 (0, config_controller_1.default)(exports.router); // Register config-related routes
 (0, state_controller_1.default)(exports.router); // Register node-state-related routes
 (0, path_controller_1.default)(exports.router); // Register path-related routes
+(0, signal_controller_1.default)(exports.router);
 app.use((0, koa_bodyparser_1.default)());
 app.use((0, koa_static_1.default)(exports.CLIENT_PATH)) // Serve the dashboard
     .use(exports.router.routes()) // Register router routes
     .use(exports.router.allowedMethods());
 app.listen(6969);
+exports.logger.info(`Server listening on :6969`);

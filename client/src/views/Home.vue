@@ -125,7 +125,7 @@
                     >
                         <option
                             v-for="point in pointList"
-                            :value="point"
+                            :value="point.id"
                             :key="point.id"
                         >
                             {{ point.name ?? point.id }}
@@ -174,12 +174,12 @@
                             v-if="signal.state === 1"
                         />
                         <Icon
-                            icon="uiw:minus-circle"
+                            icon="uiw:down-circle"
                             class="text-3xl text-indicator-caution hover:text-indicator-caution-darker"
                             v-if="signal.state === 2"
                         />
                         <Icon
-                            icon="uiw:down-circle"
+                            icon="uiw:minus-circle"
                             class="text-3xl text-indicator-caution hover:text-indicator-caution-darker"
                             v-if="signal.state === 3"
                         />
@@ -308,13 +308,9 @@ const resetPath = async () => {
 const setSignal = async () => {
     const signal = selectedSignal.value;
     const to = signalDestination.value;
+    console.log(to);
 
-    await axios.post(`${useBaseURL()}/signals/allow/${signal}`, {
-        method: "POST",
-        body: {
-            to,
-        },
-    });
+    await axios.post(`${useBaseURL()}/signals/allow/${signal}/${to}`);
     signalList.value = await fetchSignals();
 };
 

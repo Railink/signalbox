@@ -2,7 +2,7 @@ import { StationConfig } from "@common/config/config";
 import { SwitchState } from "@common/nodes/state";
 import { isRailSwitch, RailNode } from "@common/nodes/switch";
 import { isWaypoint } from "@common/nodes/waypoint";
-import { DijkstraCalculator, LinkedListItem } from "dijkstra-calculator";
+import { LinkedListItem, DijkstraCalculator } from "dijkstra-calculator";
 import { getNode } from "../config/config.util";
 import { readSwitchState } from "../switches";
 
@@ -24,20 +24,27 @@ export const checkPathSate = (
 
     let directionChange = false;
 
-    calculatedPath.forEach((step) => {
+    console.log("AAA", source, target, calculatedPath);
+    
+    for (let step of calculatedPath) {
         const source = getNode(step.source, stationConfig);
         const target = getNode(step.target, stationConfig);
+        console.log(source, target);
 
-        if (!source || !target) return;
+        if (!source || !target) continue;
 
-        if (isRailSwitch(source)) {
+        if (!canTravelBetween(source, target)) return PathState.UNSAFE;
+
+        if (isRailSwitch(source) && !directionChange) {
             directionChange = source.plus.node === target.id;
+            console.log(source.plus.node === target.id);
         }
 
-        if (isRailSwitch(target)) {
+        if (isRailSwitch(target) && !directionChange) {
             directionChange = target.plus.node === source.id;
+            console.log(target.plus.node === source.id);
         }
-    });
+    }
 
     if (directionChange) return PathState.SAFE_CAUTION;
     else return PathState.SAFE;
