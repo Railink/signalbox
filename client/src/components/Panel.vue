@@ -39,9 +39,17 @@ const props = defineProps({
 });
 
 const fetchSwitches = async () =>
-    (await axios.get<(RailSwitch & NodeState)[]>(`${useBaseURL()}/state/switches`)).data;
+    (
+        await axios.get<(RailSwitch & NodeState)[]>(
+            `${useBaseURL()}/state/switches`
+        )
+    ).data;
 const fetchCurrentPaths = async () =>
-    (await axios.get<LinkedListItem[][]>(`${useBaseURL()}/state/paths`)).data;
+    (
+        await axios.get<{ id: string; steps: LinkedListItem[] }[]>(
+            `${useBaseURL()}/state/paths`
+        )
+    ).data;
 const fetchSwitchConfig = async () =>
     (await axios.get<RailSwitch[]>(`${useBaseURL()}/config/switches`)).data;
 const fetchWaypointConfig = async () =>
@@ -56,7 +64,7 @@ onMounted(async () => {
 
     canvas.attr("preserveAspectRatio", "slice");
     canvas.attr("ref", "panel");
-    canvas.attr("style", "height: inherit;")
+    canvas.attr("style", "height: inherit;");
 
     const switches = await fetchSwitchConfig();
     const waypoints = await fetchWaypointConfig();
@@ -81,7 +89,7 @@ onMounted(async () => {
 
     await panel.drawPanel();
     await panel.updatePanel(switchState);
-    await panel.updatePaths(await fetchCurrentPaths());
+    await panel.updatePaths((await fetchCurrentPaths()).map((p) => p.steps));
 
     const { x, y, width, height } = canvas.bbox();
     const newWidth = x + width + x;

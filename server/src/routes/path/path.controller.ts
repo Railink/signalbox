@@ -1,6 +1,11 @@
 import Router from "@koa/router";
 import { DefaultState } from "koa";
-import { createPath, getActivePaths, setPath } from "./path.service";
+import {
+    createPath,
+    getActivePaths,
+    setPath,
+    unlockPath,
+} from "./path.service";
 import { LinkedListItem } from "dijkstra-calculator";
 import { AppContext } from "@common/config/config";
 
@@ -29,6 +34,10 @@ const pathRoutes = (router: Router<DefaultState, AppContext>) => {
             console.error(e);
             ctx.body = e.message;
         }
+    });
+
+    router.post("/path/unlock/:id", (ctx, _next) => {
+        ctx.body = unlockPath(ctx.params.id);
     });
 };
 

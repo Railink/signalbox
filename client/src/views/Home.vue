@@ -137,22 +137,19 @@
         </div>
         <section class="basis-1/3">
             <h1>Aktywne przebiegi</h1>
-            <div
-                class="path"
-                v-for="path in activePaths.filter((p) => p.length > 0)"
-            >
-                <button @click="resetPath()">
+            <div class="path" v-for="[id, steps] in activePaths">
+                <button @click="resetPath(id)">
                     <Icon
                         icon="uil:link-broken"
                         class="text-3xl text-indicator-negative hover:text-indicator-negative-darker"
                     />
                 </button>
-                <h2>{{ path[0].source }}</h2>
+                <h2>{{ steps[0].source }}</h2>
                 <Icon
                     icon="uil:arrow-circle-right"
                     class="text-3xl text-indicator-ambient"
                 />
-                <h2>{{ path[path.length - 1].target }}</h2>
+                <h2>{{ steps[steps.length - 1].target }}</h2>
             </div>
         </section>
         <section class="basis-1/3">
@@ -225,7 +222,11 @@ const fetchSignals = async () =>
         )
     ).data;
 const fetchCurrentPaths = async () =>
-    (await axios.get<LinkedListItem[][]>(`${useBaseURL()}/state/paths`)).data;
+    (
+        await axios.get<{ id: string; steps: LinkedListItem[] }[]>(
+            `${useBaseURL()}/state/paths`
+        )
+    ).data;
 const fetchWaypointConfig = async () =>
     (await axios.get<RailWaypoint[]>(`${useBaseURL()}/config/waypoints`)).data;
 
@@ -235,9 +236,9 @@ const startNode = ref<number>();
 const finishNode = ref<number>();
 const selectedSignal = ref<number>();
 const signalDestination = ref<number>();
-const activePaths = ref<LinkedListItem[][]>([]);
 const panelInjection = inject<PanelInjection>("dashboard-panel");
 
+const activePaths = reactive<Map<string, LinkedListItem[]>>(new Map());
 const activeSwitching = reactive<Map<string, LinkedListItem[][]>>(new Map());
 
 const pathConfirmationModalVisible = ref(false);
@@ -246,7 +247,8 @@ const currentCheckedPath = ref<CheckedPath>([]);
 
 onMounted(async () => {
     pointList.value = await fetchWaypointConfig();
-    activePaths.value = await fetchCurrentPaths();
+    activePaths.clear();
+    (await fetchCurrentPaths()).forEach((p) => activePaths.set(p.id, p.steps));
     signalList.value = await fetchSignals();
 });
 
@@ -289,20 +291,25 @@ const submitPath = async (checkedPath: CheckedPath) => {
             return;
         }
 
-        activePaths.value.push(checkedPath[0]);
         panelInjection?.panel().updatePanel(await fetchSwitches());
-        activePaths.value = await fetchCurrentPaths();
-        panelInjection?.panel().updatePaths(activePaths.value);
+        fetchCurrentPaths().then((currentPaths) => {
+            activePaths.clear();
+            currentPaths.forEach((p) => activePaths.set(p.id, p.steps));
+            panelInjection
+                ?.panel()
+                .updatePaths(currentPaths.map((p) => p.steps));
+        });
     }
 };
 
-const resetPath = async () => {
-    await axios.post(`${useBaseURL()}/resetPath`);
+const resetPath = async (id: string) => {
+    await axios.post(`${useBaseURL()}/path/unlock/${id}`);
     await axios.get(`${useBaseURL()}/state/switches`).then(async () => {
         panelInjection?.panel().updatePanel(await fetchSwitches());
         panelInjection?.panel().updatePaths([]);
     });
-    activePaths.value = await fetchCurrentPaths();
+    activePaths.clear();
+    (await fetchCurrentPaths()).forEach((p) => activePaths.set(p.id, p.steps));
 };
 
 const setSignal = async () => {

@@ -11,12 +11,21 @@ import { calculatePath, splitPathOnDirectionChange } from "../../path";
 
 type RailNode = RailSwitch | RailWaypoint | null;
 
-const activePaths: LinkedListItem[][] = []; // Currently used paths
+const activePaths: Map<string, LinkedListItem[]> = new Map(); // Currently used paths
 const queues: Map<string, LinkedListItem[][]> = new Map(); // Switching queues
 
-export const getActivePaths = () => activePaths;
-export const getActiveQueues = () =>
-    Array.from(queues, ([id, steps]) => [id, steps]);
+export const getActivePaths = (): { id: string; steps: LinkedListItem[] }[] =>
+    Array.from(activePaths, ([id, steps]) => {
+        return { id, steps };
+    });
+
+export const getActiveQueues = (): {
+    id: string;
+    steps: LinkedListItem[][];
+}[] =>
+    Array.from(queues, ([id, steps]) => {
+        return { id, steps };
+    });
 
 export const createPath = (
     start: string,
@@ -50,8 +59,11 @@ export const setPath = (
         };
     } else {
         if (
-            steps.find((step) =>
-                activePaths.find((p) => p.find((s) => s.source === step.source)) // Another path includes a node required for this one
+            steps.find(
+                (step) =>
+                    Array.from(activePaths.values()).find((p) =>
+                        p.find((s) => s.source === step.source)
+                    ) // Another path includes a node required for this one
             )
         ) {
             return {
@@ -86,7 +98,7 @@ export const setPath = (
             setNode(targetNode, sourceNode);
         });
 
-        activePaths.push(steps);
+        activePaths.set(randomBytes(20).toString("hex"), steps);
 
         return {
             // semi-placeholder response, nothing to return from a single-step operation
@@ -96,3 +108,12 @@ export const setPath = (
         };
     }
 };
+
+export const unlockPath = (id: string) => {
+    if (!activePaths.has(id)) {
+        return "Invalid path id!";
+    } else {
+        activePaths.delete(id);
+        return "OK!";
+    }
+}

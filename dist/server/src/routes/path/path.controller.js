@@ -20,5 +20,8 @@ const pathRoutes = (router) => {
             ctx.body = e.message;
         }
     });
+    router.post("/path/unlock/:id", (ctx, _next) => {
+        ctx.body = (0, path_service_1.unlockPath)(ctx.params.id);
+    });
 };
 exports.default = pathRoutes;

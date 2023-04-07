@@ -1,17 +1,21 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setPath = exports.createPath = exports.getActiveQueues = exports.getActivePaths = void 0;
+exports.unlockPath = exports.setPath = exports.createPath = exports.getActiveQueues = exports.getActivePaths = void 0;
 const state_1 = require("@common/nodes/state");
 const waypoint_1 = require("@common/nodes/waypoint");
 const crypto_1 = require("crypto");
 const config_util_1 = require("../../config/config.util");
 const switches_1 = require("../../switches");
 const path_1 = require("../../path");
-const activePaths = []; // Currently used paths
+const activePaths = new Map(); // Currently used paths
 const queues = new Map(); // Switching queues
-const getActivePaths = () => activePaths;
+const getActivePaths = () => Array.from(activePaths, ([id, steps]) => {
+    return { id, steps };
+});
 exports.getActivePaths = getActivePaths;
-const getActiveQueues = () => Array.from(queues, ([id, steps]) => [id, steps]);
+const getActiveQueues = () => Array.from(queues, ([id, steps]) => {
+    return { id, steps };
+});
 exports.getActiveQueues = getActiveQueues;
 const createPath = (start, finish, stationConfig) => {
     return (0, path_1.splitPathOnDirectionChange)(stationConfig, (0, path_1.calculatePath)(start, finish, stationConfig));
@@ -34,7 +38,7 @@ const setPath = (stationConfig, steps, withSignals // TODO: Automatic signal set
         };
     }
     else {
-        if (steps.find((step) => activePaths.find((p) => p.find((s) => s.source === step.source)) // Another path includes a node required for this one
+        if (steps.find((step) => Array.from(activePaths.values()).find((p) => p.find((s) => s.source === step.source)) // Another path includes a node required for this one
         )) {
             return {
                 type: "result",
@@ -63,7 +67,7 @@ const setPath = (stationConfig, steps, withSignals // TODO: Automatic signal set
             setNode(sourceNode, targetNode);
             setNode(targetNode, sourceNode);
         });
-        activePaths.push(steps);
+        activePaths.set((0, crypto_1.randomBytes)(20).toString("hex"), steps);
         return {
             // semi-placeholder response, nothing to return from a single-step operation
             type: "result",
@@ -73,3 +77,13 @@ const setPath = (stationConfig, steps, withSignals // TODO: Automatic signal set
     }
 };
 exports.setPath = setPath;
+const unlockPath = (id) => {
+    if (!activePaths.has(id)) {
+        return "Invalid path id!";
+    }
+    else {
+        activePaths.delete(id);
+        return "OK!";
+    }
+};
+exports.unlockPath = unlockPath;
