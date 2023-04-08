@@ -27,9 +27,7 @@ import { LightingNode } from '@common/nodes/lighting';
 import { NodeState } from '@common/nodes/state';
 import { ref, onMounted } from 'vue';
 import { useBaseURL } from '../composables/baseURL';
-
-const fetchLighting = async () =>
-    (await axios.get<(LightingNode & NodeState)[]>(`${useBaseURL()}/state/lighting`)).data;
+import { fetchLighting } from 'src/composables/fetch';
 
 let lightingState = ref<(LightingNode & NodeState)[]>([]);
 

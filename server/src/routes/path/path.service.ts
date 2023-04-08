@@ -116,4 +116,39 @@ export const unlockPath = (id: string) => {
         activePaths.delete(id);
         return "OK!";
     }
-}
+};
+
+export const nextStep = (
+    stationConfig: StationConfig,
+    id: string
+): PathSetResult => {
+    if (!queues.has(id)) {
+        return {
+            type: "result",
+            id: "___INVQUEUE___",
+            steps: [],
+        };
+    }
+
+    const queue = queues.get(id)!!;
+    const nextStep = queue[0];
+    const result = setPath(stationConfig, nextStep, false);
+
+    if (result.id === "___COLLISION___") {
+        return {
+            type: "result",
+            id: "___COLLISION___",
+            steps: [],
+        };
+    }
+
+    queue.shift();
+
+    if (queue.length <= 0) queues.delete(id);
+
+    return {
+        type: "result",
+        id: "___SUCCESS___",
+        steps: [],
+    };
+};

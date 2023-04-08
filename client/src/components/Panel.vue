@@ -4,16 +4,10 @@
 
 <script setup lang="ts">
 import StationPanel, { PanelInjection } from "../dashboard/panel";
-import axios from "axios";
-import { LinkedListItem } from "dijkstra-calculator";
 import { Svg } from "@svgdotjs/svg.js";
 import { inject, onMounted, watch } from "vue";
 import { usePaths } from "../composables/panelStates";
-import { RailSignal } from "@common/nodes/signal";
-import { RailSwitch } from "@common/nodes/switch";
-import { RailWaypoint } from "@common/nodes/waypoint";
-import { NodeState } from "@common/nodes/state";
-import { useBaseURL } from "../composables/baseURL";
+import { fetchWaypointConfig, fetchSwitches, fetchCurrentPaths, fetchSignals } from "src/composables/fetch";
 
 const props = defineProps({
     lineColor: {
@@ -38,25 +32,6 @@ const props = defineProps({
     },
 });
 
-const fetchSwitches = async () =>
-    (
-        await axios.get<(RailSwitch & NodeState)[]>(
-            `${useBaseURL()}/state/switches`
-        )
-    ).data;
-const fetchCurrentPaths = async () =>
-    (
-        await axios.get<{ id: string; steps: LinkedListItem[] }[]>(
-            `${useBaseURL()}/state/paths`
-        )
-    ).data;
-const fetchSwitchConfig = async () =>
-    (await axios.get<RailSwitch[]>(`${useBaseURL()}/config/switches`)).data;
-const fetchWaypointConfig = async () =>
-    (await axios.get<RailWaypoint[]>(`${useBaseURL()}/config/waypoints`)).data;
-const fetchSignalConfig = async () =>
-    (await axios.get<RailSignal[]>(`${useBaseURL()}/config/signals`)).data;
-
 const panelInjection = inject<PanelInjection>(props.id);
 
 onMounted(async () => {
@@ -66,9 +41,9 @@ onMounted(async () => {
     canvas.attr("ref", "panel");
     canvas.attr("style", "height: inherit;");
 
-    const switches = await fetchSwitchConfig();
+    const switches = await fetchSwitches();
     const waypoints = await fetchWaypointConfig();
-    const signals = await fetchSignalConfig();
+    const signals = await fetchSignals();
     const switchState = await fetchSwitches();
 
     panelInjection?.updatePanel(

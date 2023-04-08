@@ -200,35 +200,14 @@ import { Icon } from "@iconify/vue";
 import { ref, inject, onMounted, reactive } from "vue";
 import { RailSignal } from "@common/nodes/signal";
 import { NodeState } from "@common/nodes/state";
-import { RailSwitch } from "@common/nodes/switch";
 import { RailWaypoint } from "@common/nodes/waypoint";
 import { PathSetResult } from "@common/path";
 import { useBaseURL } from "../composables/baseURL";
 import { PanelInjection } from "../dashboard/panel";
 import Modal from "../components/Modal.vue";
+import { fetchWaypointConfig, fetchCurrentPaths, fetchSignals, fetchSwitches, fetchCurrentQueues } from "src/composables/fetch";
 
 type CheckedPath = LinkedListItem[][];
-
-const fetchSwitches = async () =>
-    (
-        await axios.get<(RailSwitch & NodeState)[]>(
-            `${useBaseURL()}/state/switches`
-        )
-    ).data;
-const fetchSignals = async () =>
-    (
-        await axios.get<(RailSignal & NodeState)[]>(
-            `${useBaseURL()}/state/signals`
-        )
-    ).data;
-const fetchCurrentPaths = async () =>
-    (
-        await axios.get<{ id: string; steps: LinkedListItem[] }[]>(
-            `${useBaseURL()}/state/paths`
-        )
-    ).data;
-const fetchWaypointConfig = async () =>
-    (await axios.get<RailWaypoint[]>(`${useBaseURL()}/config/waypoints`)).data;
 
 const pointList = ref<RailWaypoint[]>([]);
 const signalList = ref<(RailSignal & NodeState)[]>([]);
@@ -239,7 +218,7 @@ const signalDestination = ref<number>();
 const panelInjection = inject<PanelInjection>("dashboard-panel");
 
 const activePaths = reactive<Map<string, LinkedListItem[]>>(new Map());
-const activeSwitching = reactive<Map<string, LinkedListItem[][]>>(new Map());
+const activeQueues = reactive<Map<string, LinkedListItem[][]>>(new Map());
 
 const pathConfirmationModalVisible = ref(false);
 const pathCollisionModalVisible = ref(false);
@@ -249,6 +228,7 @@ onMounted(async () => {
     pointList.value = await fetchWaypointConfig();
     activePaths.clear();
     (await fetchCurrentPaths()).forEach((p) => activePaths.set(p.id, p.steps));
+    (await fetchCurrentQueues()).forEach((p) => activeQueues.set(p.id, p.steps));
     signalList.value = await fetchSignals();
 });
 
@@ -283,8 +263,8 @@ const submitPath = async (checkedPath: CheckedPath) => {
     ).data;
 
     if (submittedPath.type === "plan") {
-        if (activeSwitching.has(submittedPath.id)) return;
-        activeSwitching.set(submittedPath.id, submittedPath.steps);
+        if (activeQueues.has(submittedPath.id)) return;
+        activeQueues.set(submittedPath.id, submittedPath.steps);
     } else {
         if (submittedPath.id === "___COLLISION___") {
             pathCollisionModalVisible.value = true;

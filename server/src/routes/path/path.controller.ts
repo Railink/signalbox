@@ -3,6 +3,7 @@ import { DefaultState } from "koa";
 import {
     createPath,
     getActivePaths,
+    nextStep,
     setPath,
     unlockPath,
 } from "./path.service";
@@ -39,6 +40,13 @@ const pathRoutes = (router: Router<DefaultState, AppContext>) => {
     router.post("/path/unlock/:id", (ctx, _next) => {
         ctx.body = unlockPath(ctx.params.id);
     });
+
+    router.post("/path/queue/:id/next", (ctx, _next) => {
+        ctx.body = nextStep(ctx.stationConfig, ctx.params.id);
+    });
+
+    router.post("/path/queue/:id/destroy", (ctx, _next) => {});
+
 };
 
 export default pathRoutes;
