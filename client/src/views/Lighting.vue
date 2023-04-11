@@ -27,7 +27,7 @@ import { LightingNode } from '@common/nodes/lighting';
 import { NodeState } from '@common/nodes/state';
 import { ref, onMounted } from 'vue';
 import { useBaseURL } from '../composables/baseURL';
-import { fetchLighting } from 'src/composables/fetch';
+import { fetchLighting } from '../composables/fetch';
 
 let lightingState = ref<(LightingNode & NodeState)[]>([]);
 

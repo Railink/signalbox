@@ -154,6 +154,32 @@
         </section>
         <section class="basis-1/3">
             <h1>Aktywne manewry</h1>
+            <div class="path" v-for="[id, steps] in activeQueues">
+                <button @click="resetPath(id)" class="-mr-2">
+                    <Icon
+                        icon="uil:trash"
+                        class="text-3xl text-indicator-negative hover:text-indicator-negative-darker"
+                    />
+                </button>
+                <button @click="openQueueModal(id)">
+                    <Icon
+                        icon="uil:arrow-up-right"
+                        class="text-3xl text-indicator-ambient hover:bg-indicator-ambient-darker hover:text-background rounded-lg"
+                    />
+                </button>
+                <h2>{{ steps[0][0].source }}</h2>
+                <Icon
+                    icon="uil:arrow-circle-right"
+                    class="text-3xl text-indicator-ambient"
+                />
+                <h2>
+                    {{
+                        steps[steps.length - 1][
+                            steps[steps.length - 1].length - 1
+                        ].target
+                    }}
+                </h2>
+            </div>
         </section>
         <section class="basis-1/3">
             <h1>Semafory</h1>
@@ -205,7 +231,13 @@ import { PathSetResult } from "@common/path";
 import { useBaseURL } from "../composables/baseURL";
 import { PanelInjection } from "../dashboard/panel";
 import Modal from "../components/Modal.vue";
-import { fetchWaypointConfig, fetchCurrentPaths, fetchSignals, fetchSwitches, fetchCurrentQueues } from "src/composables/fetch";
+import {
+    fetchWaypointConfig,
+    fetchCurrentPaths,
+    fetchSignals,
+    fetchSwitches,
+    fetchCurrentQueues,
+} from "../composables/fetch";
 
 type CheckedPath = LinkedListItem[][];
 
@@ -228,7 +260,9 @@ onMounted(async () => {
     pointList.value = await fetchWaypointConfig();
     activePaths.clear();
     (await fetchCurrentPaths()).forEach((p) => activePaths.set(p.id, p.steps));
-    (await fetchCurrentQueues()).forEach((p) => activeQueues.set(p.id, p.steps));
+    (await fetchCurrentQueues()).forEach((p) =>
+        activeQueues.set(p.id, p.steps)
+    );
     signalList.value = await fetchSignals();
 });
 
@@ -305,6 +339,8 @@ const resetSignal = async (signal: number) => {
     await axios.post(`${useBaseURL()}/signals/close/${signal}`);
     signalList.value = await fetchSignals();
 };
+
+const openQueueModal = async (id: string) => {};
 </script>
 
 <style lang="scss" scoped>

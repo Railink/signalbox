@@ -33,7 +33,7 @@ import { NodeState } from "@common/nodes/state";
 import { RailSwitch } from "@common/nodes/switch";
 import { PanelInjection } from "../dashboard/panel";
 import { useBaseURL } from "../composables/baseURL";
-import { fetchSwitches } from "src/composables/fetch";
+import { fetchSwitches } from "../composables/fetch";
 
 const panelInjection = inject<PanelInjection>("dashboard-panel");
 

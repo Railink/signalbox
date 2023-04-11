@@ -7,7 +7,12 @@ import StationPanel, { PanelInjection } from "../dashboard/panel";
 import { Svg } from "@svgdotjs/svg.js";
 import { inject, onMounted, watch } from "vue";
 import { usePaths } from "../composables/panelStates";
-import { fetchWaypointConfig, fetchSwitches, fetchCurrentPaths, fetchSignals } from "src/composables/fetch";
+import {
+    fetchWaypointConfig,
+    fetchSwitches,
+    fetchCurrentPaths,
+    fetchSignals,
+} from "../composables/fetch";
 
 const props = defineProps({
     lineColor: {

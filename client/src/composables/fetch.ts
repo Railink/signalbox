@@ -7,40 +7,47 @@ import { LinkedListItem } from "dijkstra-calculator";
 import { useBaseURL } from "./baseURL";
 import { LightingNode } from "@common/nodes/lighting";
 
-export const fetchSwitches = async () =>
-    (
+export async function fetchSwitches() {
+    return (
         await axios.get<(RailSwitch & NodeState)[]>(
             `${useBaseURL()}/state/switches`
         )
     ).data;
+}
 
-export const fetchSignals = async () =>
-    (
+export async function fetchSignals() {
+    return (
         await axios.get<(RailSignal & NodeState)[]>(
             `${useBaseURL()}/state/signals`
         )
     ).data;
+}
 
-export const fetchCurrentPaths = async () =>
-    (
+export async function fetchCurrentPaths() {
+    return (
         await axios.get<{ id: string; steps: LinkedListItem[] }[]>(
             `${useBaseURL()}/state/paths`
         )
     ).data;
+}
 
-export const fetchCurrentQueues = async () =>
-    (
+export async function fetchCurrentQueues() {
+    return (
         await axios.get<{ id: string; steps: LinkedListItem[][] }[]>(
             `${useBaseURL()}/state/queues`
         )
     ).data;
+}
 
-export const fetchWaypointConfig = async () =>
-    (await axios.get<RailWaypoint[]>(`${useBaseURL()}/config/waypoints`)).data;
+export async function fetchWaypointConfig() {
+    return (await axios.get<RailWaypoint[]>(`${useBaseURL()}/config/waypoints`))
+        .data;
+}
 
-export const fetchLighting = async () =>
-    (
+export async function fetchLighting() {
+    return (
         await axios.get<(LightingNode & NodeState)[]>(
             `${useBaseURL()}/state/lighting`
         )
     ).data;
+}

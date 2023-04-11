@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.unlockPath = exports.setPath = exports.createPath = exports.getActiveQueues = exports.getActivePaths = void 0;
+exports.nextStep = exports.unlockPath = exports.setPath = exports.createPath = exports.getActiveQueues = exports.getActivePaths = void 0;
 const state_1 = require("@common/nodes/state");
 const waypoint_1 = require("@common/nodes/waypoint");
 const crypto_1 = require("crypto");
@@ -87,3 +87,31 @@ const unlockPath = (id) => {
     }
 };
 exports.unlockPath = unlockPath;
+const nextStep = (stationConfig, id) => {
+    if (!queues.has(id)) {
+        return {
+            type: "result",
+            id: "___INVQUEUE___",
+            steps: [],
+        };
+    }
+    const queue = queues.get(id);
+    const nextStep = queue[0];
+    const result = (0, exports.setPath)(stationConfig, nextStep, false);
+    if (result.id === "___COLLISION___") {
+        return {
+            type: "result",
+            id: "___COLLISION___",
+            steps: [],
+        };
+    }
+    queue.shift();
+    if (queue.length <= 0)
+        queues.delete(id);
+    return {
+        type: "result",
+        id: "___SUCCESS___",
+        steps: [],
+    };
+};
+exports.nextStep = nextStep;
