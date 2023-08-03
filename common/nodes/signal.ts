@@ -14,3 +14,10 @@ export interface SignalAspect {
     id: number;
     pins: PinSignal[];
 }
+
+export enum StandardSignalAspect {
+    STOP,
+    ALLOW,
+    ALLOW_CAUTION,
+    NEXT_STOP,
+}

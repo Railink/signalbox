@@ -44,31 +44,39 @@
                 </div>
             </article>
         </Modal>
-        <Modal
-            :show="pathCollisionModalVisible"
-            @close="pathCollisionModalVisible = false"
-        >
+        <Modal :show="queueModalVisible" @close="queueModalVisible = false">
+            <article>
+                <h1 class="text-3xl font-semibold">Manewry</h1>
+                <div class="flex items-center gap-2 text-2xl mt-3"></div>
+                <div class="path-confirmation">
+                    <button
+                        class="cancel"
+                        @click="pathConfirmationModalVisible = false"
+                    >
+                        Zamknij
+                    </button>
+                </div>
+            </article>
+        </Modal>
+        <Modal :show="errorModalVisible" @close="errorModalVisible = false">
             <article>
                 <h1 class="text-3xl font-semibold">
-                    Błąd ustawiania przebiegu
+                    {{ error.name }}
                 </h1>
                 <div class="flex items-center gap-2 text-2xl mt-3">
                     <p>
-                        Ten przebieg koliduje z innym, zablokowanym przebiegiem
+                        {{ error.message }}
                     </p>
                 </div>
                 <div class="path-confirmation -ml-2">
-                    <button
-                        class="cancel"
-                        @click="pathCollisionModalVisible = false"
-                    >
+                    <button class="cancel" @click="errorModalVisible = false">
                         Rozumiem
                     </button>
                 </div>
             </article>
         </Modal>
-        <div class="grid gap-8">
-            <section>
+        <div class="grid gap-4 basis-1/3">
+            <section class="">
                 <h1>Ustawianie przebiegu</h1>
                 <form
                     class="flex items-center gap-2 my-3"
@@ -131,6 +139,46 @@
                             {{ point.name ?? point.id }}
                         </option>
                     </select>
+                    <Icon
+                        icon="uil:traffic-light"
+                        class="text-3xl text-indicator-ambient"
+                    />
+                    <select
+                        class="w-24"
+                        name="aspect"
+                        id="aspect"
+                        v-model="signalAspect"
+                    >
+                        <option value="-1">Auto</option>
+                        <option
+                            v-for="aspect in signalList.find(
+                                (s) => s.id === selectedSignal
+                            )?.aspects"
+                            :value="aspect.id"
+                            :key="aspect.id"
+                        >
+                            {{ aspect.name }}
+                        </option>
+                    </select>
+                    <Icon
+                        icon="uil:stopwatch"
+                        class="text-3xl text-indicator-ambient"
+                    />
+                    <select name="time" id="time" v-model="signalTime">
+                        <option value="0">∞</option>
+                        <option value="5">5s</option>
+                        <option value="10">10s</option>
+                        <option value="15">15s</option>
+                        <option value="20">20s</option>
+                        <option value="25">25s</option>
+                        <option value="30">30s</option>
+                        <option value="35">35s</option>
+                        <option value="40">40s</option>
+                        <option value="45">45s</option>
+                        <option value="50">50s</option>
+                        <option value="55">55s</option>
+                        <option value="60">60s</option>
+                    </select>
                     <button type="submit">Ustaw</button>
                 </form>
             </section>
@@ -188,27 +236,27 @@
                     <button @click="resetSignal(signal.id)">
                         <Icon
                             icon="uiw:stop"
-                            class="text-3xl text-indicator-negative hover:text-indicator-negative-darker"
+                            class="text-xl 2xl:text-3xl text-indicator-negative hover:text-indicator-negative-darker"
                             v-if="signal.state === 0"
                         />
                         <Icon
                             icon="uiw:down-circle"
-                            class="text-3xl text-indicator-positive hover:text-indicator-positive-darker"
+                            class="text-xl 2xl:text-3xl text-indicator-positive hover:text-indicator-positive-darker"
                             v-if="signal.state === 1"
                         />
                         <Icon
                             icon="uiw:down-circle"
-                            class="text-3xl text-indicator-caution hover:text-indicator-caution-darker"
+                            class="text-xl 2xl:text-3xl text-indicator-caution hover:text-indicator-caution-darker"
                             v-if="signal.state === 2"
                         />
                         <Icon
                             icon="uiw:minus-circle"
-                            class="text-3xl text-indicator-caution hover:text-indicator-caution-darker"
+                            class="text-xl 2xl:text-3xl text-indicator-caution hover:text-indicator-caution-darker"
                             v-if="signal.state === 3"
                         />
                         <Icon
                             icon="uiw:minus-circle"
-                            class="text-3xl text-slate-500 hover:text-indicator-positive-darker"
+                            class="text-xl 2xl:text-3xl text-slate-500 hover:text-indicator-positive-darker"
                             v-if="signal.state === -1"
                         />
                     </button>
@@ -241,19 +289,28 @@ import {
 
 type CheckedPath = LinkedListItem[][];
 
+interface ErrorModal {
+    name: string;
+    message: string;
+}
+
 const pointList = ref<RailWaypoint[]>([]);
 const signalList = ref<(RailSignal & NodeState)[]>([]);
 const startNode = ref<number>();
 const finishNode = ref<number>();
 const selectedSignal = ref<number>();
 const signalDestination = ref<number>();
+const signalAspect = ref<number>(-1);
+const signalTime = ref<number>(0);
 const panelInjection = inject<PanelInjection>("dashboard-panel");
 
 const activePaths = reactive<Map<string, LinkedListItem[]>>(new Map());
 const activeQueues = reactive<Map<string, LinkedListItem[][]>>(new Map());
+const error = reactive<ErrorModal>({ name: "?", message: "" });
 
 const pathConfirmationModalVisible = ref(false);
-const pathCollisionModalVisible = ref(false);
+const errorModalVisible = ref(false);
+const queueModalVisible = ref(false);
 const currentCheckedPath = ref<CheckedPath>([]);
 
 onMounted(async () => {
@@ -301,7 +358,9 @@ const submitPath = async (checkedPath: CheckedPath) => {
         activeQueues.set(submittedPath.id, submittedPath.steps);
     } else {
         if (submittedPath.id === "___COLLISION___") {
-            pathCollisionModalVisible.value = true;
+            errorModalVisible.value = true;
+            error.name = "Błąd ustawiania przebiegu";
+            error.message = "Ten przebieg koliduje z aktywnym przebiegiem";
             return;
         }
 
@@ -329,9 +388,15 @@ const resetPath = async (id: string) => {
 const setSignal = async () => {
     const signal = selectedSignal.value;
     const to = signalDestination.value;
-    console.log(to);
+    const aspect = signalAspect.value;
 
-    await axios.post(`${useBaseURL()}/signals/allow/${signal}/${to}`);
+    if (aspect === -1) {
+        await axios.post(`${useBaseURL()}/signals/allow/${signal}/${to}/${signalTime}`);
+    } else {
+        await axios.post(
+            `${useBaseURL()}/signals/allow/${signal}/${to}/${aspect}/${signalTime}`
+        );
+    }
     signalList.value = await fetchSignals();
 };
 
@@ -348,14 +413,14 @@ const openQueueModal = async (id: string) => {};
     button {
         @apply mr-2;
     }
-    @apply text-xl my-3 flex gap-2 items-center bg-background w-fit px-2 py-1 rounded-lg border-border/50 border;
+    @apply my-3 flex gap-2 items-center bg-background w-fit px-2 py-1 rounded-lg border-border/50 border;
 }
 
 .signal {
     button {
-        @apply mr-2;
+        @apply 2xl:mr-2 mr-1;
     }
-    @apply text-xl flex gap-2 items-center bg-background w-fit px-2 py-1 rounded-lg border-border/50 border;
+    @apply 2xl:text-xl flex gap-2 items-center bg-background w-fit px-1 2xl:px-2 py-1 rounded-lg border-border/50 border;
 }
 
 main {
@@ -367,11 +432,14 @@ section {
 }
 
 select {
-    @apply bg-field border-darker-panel border-2 rounded-lg py-2 px-2 w-24;
+    @apply text-sm bg-field border-darker-panel border-2 rounded-lg py-1 px-1 w-12 2xl:py-2 2xl:px-2 2xl:w-24;
+    &[name="aspect"], &[name="time"], &[name="start"], &[name="finish"] {
+        @apply w-16 2xl:w-24;
+    }
 }
 
 button[type="submit"] {
-    @apply bg-indicator-ambient hover:bg-indicator-ambient-darker px-4 py-2 rounded-lg text-white font-semibold;
+    @apply bg-indicator-ambient hover:bg-indicator-ambient-darker px-2 py-1 2xl:px-4 2xl:py-2 rounded-lg text-white 2xl:font-semibold;
 }
 
 .path-confirmation {

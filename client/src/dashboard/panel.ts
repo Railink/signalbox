@@ -5,8 +5,9 @@ import { RailWaypoint } from "@common/nodes/waypoint";
 import { Shape, Svg } from "@svgdotjs/svg.js";
 import { LinkedListItem } from "dijkstra-calculator";
 
-const sizeFactor = 50;
-const pointSize = 10;
+const SIZE_FACTOR = 25;
+const POINT_SIZE = 10;
+const FONT_SIZE = 14;
 
 export interface PanelInjection {
     panel: () => StationPanel;
@@ -95,12 +96,12 @@ class StationPanel {
                         ? signal.id.toString() + "►"
                         : "◄" + signal.id.toString()
                 )
-                .move(signal.position.x * sizeFactor, signal.position.y * sizeFactor - (pointSize * 3))
+                .move(signal.position.x * SIZE_FACTOR, signal.position.y * SIZE_FACTOR - (POINT_SIZE * 3))
                 .font({
                     fill: "#44403c",
                     family: "Calibri",
                     weight: 700,
-                    size: "18px",
+                    size: `${FONT_SIZE}px`,
                 })
         });
         nodes.forEach((node) => {
@@ -121,17 +122,17 @@ class StationPanel {
                 this.canvas
                     ?.text(name)
                     .move(
-                        node.position.x * sizeFactor,
-                        (node.position.y * sizeFactor) -
+                        node.position.x * SIZE_FACTOR,
+                        (node.position.y * SIZE_FACTOR) -
                             (this.getSwitchOrientation(node) === "down"
-                                ? ((pointSize * 3))
-                                : -((pointSize * 2) / 3))
+                                ? ((POINT_SIZE * 3))
+                                : -((POINT_SIZE * 2) / 3))
                     )
                     .font({
                         fill: "#3D3D3D",
                         family: "Calibri",
                         weight: 700,
-                        size: "18px",
+                        size: `${FONT_SIZE}px`,
                     });
             }
 
@@ -151,14 +152,14 @@ class StationPanel {
 
                 this.canvas
                     ?.line(
-                        x1 * sizeFactor,
-                        y1 * sizeFactor,
-                        (x2 * sizeFactor) / 2 + (x1 * sizeFactor) / 2, // Line halving
-                        (y2 * sizeFactor) / 2 + (y1 * sizeFactor) / 2 // Line halving
+                        x1 * SIZE_FACTOR,
+                        y1 * SIZE_FACTOR,
+                        (x2 * SIZE_FACTOR) / 2 + (x1 * SIZE_FACTOR) / 2, // Line halving
+                        (y2 * SIZE_FACTOR) / 2 + (y1 * SIZE_FACTOR) / 2 // Line halving
                     )
                     .stroke({
                         color: this.lineColor,
-                        width: pointSize,
+                        width: POINT_SIZE,
                         linecap: "round",
                     });
             });
@@ -189,24 +190,24 @@ class StationPanel {
 
             const line = this.canvas
                 ?.line(
-                    x1 * sizeFactor,
-                    y1 * sizeFactor,
-                    (x2 * sizeFactor) / 2 + (x1 * sizeFactor) / 2, // Line halving
-                    (y2 * sizeFactor) / 2 + (y1 * sizeFactor) / 2 // Line halving
+                    x1 * SIZE_FACTOR,
+                    y1 * SIZE_FACTOR,
+                    (x2 * SIZE_FACTOR) / 2 + (x1 * SIZE_FACTOR) / 2, // Line halving
+                    (y2 * SIZE_FACTOR) / 2 + (y1 * SIZE_FACTOR) / 2 // Line halving
                 )
                 .stroke({
                     color: state.state === 2 ? this.errorColor : this.wayColor, // SwitchState.UNKNOWN
-                    width: pointSize + 0.1,
+                    width: POINT_SIZE + 0.1,
                     linecap: "round",
                 })
                 .attr("onclick", "alert('ss')");
 
             this.canvas
-                ?.circle(pointSize)
+                ?.circle(POINT_SIZE)
                 .fill(state.state === 2 ? this.errorColor : this.wayColor)
                 .move(
-                    s.position.x * sizeFactor - pointSize / 2,
-                    s.position.y * sizeFactor - pointSize / 2
+                    s.position.x * SIZE_FACTOR - POINT_SIZE / 2,
+                    s.position.y * SIZE_FACTOR - POINT_SIZE / 2
                 )
                 .attr("onclick", "alert('s')");
 
@@ -239,14 +240,14 @@ class StationPanel {
 
                 const line = this.canvas
                     ?.line(
-                        x1 * sizeFactor,
-                        y1 * sizeFactor,
-                        x2 * sizeFactor, // Line halving
-                        y2 * sizeFactor // Line halving
+                        x1 * SIZE_FACTOR,
+                        y1 * SIZE_FACTOR,
+                        x2 * SIZE_FACTOR, // Line halving
+                        y2 * SIZE_FACTOR // Line halving
                     )
                     .stroke({
                         color: this.pathColor,
-                        width: pointSize + 0.1,
+                        width: POINT_SIZE + 0.1,
                         linecap: "round",
                     });
 

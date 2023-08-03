@@ -33,7 +33,7 @@ nav > ul {
     @apply flex bg-background;
 
     & > li:not(.filler) {
-        @apply text-2xl px-4 py-2 rounded-t-xl border-x-border border-t-border border select-none cursor-pointer;
+        @apply text-xl 2xl:text-2xl px-2 py-1 2xl:px-4 2xl:py-2 rounded-t-xl border-x-border border-t-border border select-none cursor-pointer;
     }
 
     & > li:not(.active, .filler) {

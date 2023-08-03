@@ -2,7 +2,6 @@ import Router from "@koa/router";
 import { DefaultState } from "koa";
 import {
     createPath,
-    getActivePaths,
     nextStep,
     setPath,
     unlockPath,
