@@ -16,9 +16,11 @@ const config_controller_1 = __importDefault(require("./routes/config/config.cont
 const path_controller_1 = __importDefault(require("./routes/path/path.controller"));
 const koa_bodyparser_1 = __importDefault(require("koa-bodyparser"));
 const state_controller_1 = __importDefault(require("./routes/state/state.controller"));
+const signal_1 = require("@common/nodes/signal");
 const app_1 = __importDefault(require("./config/app"));
 const switches_1 = __importDefault(require("./config/switches"));
 const creators_1 = require("./controllers/creators");
+const signals_1 = require("./signals");
 const switches_2 = require("./switches");
 const state_1 = require("@common/nodes/state");
 const signal_controller_1 = __importDefault(require("./routes/signal/signal.controller"));
@@ -68,6 +70,7 @@ try {
             waypoints: waypointConfig || [],
         };
         switchConfig.forEach((railSwitch) => (0, switches_2.setSwitch)(railSwitch, state_1.SwitchState.MINUS));
+        signalConfig.forEach((railSignal) => (0, signals_1.setSignal)(railSignal, signal_1.StandardSignalAspect.STOP));
     }
 }
 catch (e) {

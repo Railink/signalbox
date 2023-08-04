@@ -51,29 +51,30 @@ export default class RLSR74HC595 implements Controller {
             "low"
         );
         this.pins = Array(this.pinCount).fill(0, 0, this.pinCount);
+
+        this.pins.forEach((p, i) => this.setValue(i, 0));
     }
 
     setValue(pin: number, value: any): void {
-        if (pin < 0 || pin >= this.pinCount) throw new Error("Invalid pin!");
-
-        if (value !== 0 && value !== 1) throw new Error("Invalid value!");
+        if (pin < 0 || pin >= this.pinCount)
+            throw new Error(`Invalid pin! ${pin}`);
+        if (value !== 0 && value !== 1)
+            throw new Error(`Invalid value! ${value}`);
 
         logger.info(`Setting pin ${pin} on controller to ${value}`);
         this.pins[pin] = value as number;
 
-        [...this.pins].reverse().forEach(pinValue => {
-            if (pinValue) this.dataPin.writeSync(1); // Write data
-            else this.dataPin.writeSync(0);
+        for (let i = this.pinCount - 1; i >= 0; i--) {
+            this.dataPin.writeSync(this.pins[i] as 0 | 1); // Write data\
 
             // Shift data
             this.shiftClock.writeSync(0);
             this.shiftClock.writeSync(1);
-        })
+        }
 
         // Latch data
         this.latchClock.writeSync(1);
         this.latchClock.writeSync(0);
-
     }
 
     getValue(pin: number): number {

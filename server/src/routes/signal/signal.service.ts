@@ -26,11 +26,11 @@ export const allowSignal = (
     try {
         switch (pathState) {
             case PathState.SAFE:
-                if (aspect === -1) setSignal(signal, StandardSignalAspect.ALLOW, time);
+                if (aspect == -1) setSignal(signal, StandardSignalAspect.ALLOW, time);
                 else setSignal(signal, aspect, time);
                 break;
             case PathState.SAFE_CAUTION:
-                if (aspect === -1)
+                if (aspect == -1)
                     setSignal(signal, StandardSignalAspect.ALLOW_CAUTION, time);
                 else setSignal(signal, aspect, time);
                 break;

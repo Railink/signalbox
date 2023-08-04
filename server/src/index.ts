@@ -13,7 +13,7 @@ import stateRoutes from "./routes/state/state.controller";
 import { AppConfig, AppContext } from "@common/config/config";
 import { Controller } from "@common/controllers/Controller";
 import { LightingNode } from "@common/nodes/lighting";
-import { RailSignal } from "@common/nodes/signal";
+import { RailSignal, StandardSignalAspect } from "@common/nodes/signal";
 import { RailSwitch } from "@common/nodes/switch";
 import { RailWaypoint } from "@common/nodes/waypoint";
 import verifyAppConfig from "./config/app";
@@ -97,6 +97,10 @@ try {
 
         switchConfig.forEach((railSwitch) =>
             setSwitch(railSwitch, SwitchState.MINUS)
+        );
+
+        signalConfig.forEach((railSignal) =>
+            setSignal(railSignal, StandardSignalAspect.STOP)
         );
     }
 } catch (e: any) {

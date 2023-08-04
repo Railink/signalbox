@@ -9,14 +9,16 @@ export const setSignal = (
 ) => {
     const aspectToSet = signal.aspects.find((a) => a.id === aspectId);
 
-    if (!aspectToSet) throw new Error("Invalid aspect ID!");
+    if (!aspectToSet) throw new Error(`Invalid aspect ID! ${aspectId}`);
 
-    signal.aspects.forEach((aspect) => {
-        aspect.pins.forEach((pinSignal) => {
+    for (let i = 0; i < signal.aspects.length; i++) {
+        if (i === aspectId) continue;
+        for (let j = 0; j < signal.aspects[i].pins.length; j++) {
+            const pinSignal = signal.aspects[i].pins[j];
             const { controller, pin } = getController(pinSignal.id);
             controller.setValue(pin, pinSignal.value.disabled);
-        });
-    });
+        }
+    }
 
     aspectToSet.pins.forEach((pinSignal) => {
         const { controller, pin } = getController(pinSignal.id);
@@ -24,6 +26,7 @@ export const setSignal = (
     });
 
     if (time && time > 0) {
+        console.log(time);
         setTimeout(
             () => setSignal(signal, StandardSignalAspect.STOP),
             time * 1000

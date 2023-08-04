@@ -320,7 +320,7 @@ onMounted(async () => {
     (await fetchCurrentQueues()).forEach((p) =>
         activeQueues.set(p.id, p.steps)
     );
-    signalList.value = await fetchSignals();
+    await updateSignals();
 });
 
 const checkPath = async (from: string, to: string): Promise<CheckedPath> => {
@@ -390,13 +390,25 @@ const setSignal = async () => {
     const to = signalDestination.value;
     const aspect = signalAspect.value;
 
-    if (aspect === -1) {
-        await axios.post(`${useBaseURL()}/signals/allow/${signal}/${to}/${signalTime}`);
+    if (aspect == -1) {
+        await axios.post(
+            `${useBaseURL()}/signals/allow/${signal}/${to}/${signalTime.value}`
+        );
     } else {
         await axios.post(
-            `${useBaseURL()}/signals/allow/${signal}/${to}/${aspect}/${signalTime}`
+            `${useBaseURL()}/signals/set/${signal}/${to}/${aspect}/${
+                signalTime.value
+            }`
         );
     }
+    if (signalTime.value != 0) {
+        updateSignals();
+    }
+    await updateSignals();
+    setTimeout(updateSignals, signalTime.value * 1000 + 500);
+};
+
+const updateSignals = async () => {
     signalList.value = await fetchSignals();
 };
 
@@ -433,7 +445,10 @@ section {
 
 select {
     @apply text-sm bg-field border-darker-panel border-2 rounded-lg py-1 px-1 w-12 2xl:py-2 2xl:px-2 2xl:w-24;
-    &[name="aspect"], &[name="time"], &[name="start"], &[name="finish"] {
+    &[name="aspect"],
+    &[name="time"],
+    &[name="start"],
+    &[name="finish"] {
         @apply w-16 2xl:w-24;
     }
 }

@@ -14,13 +14,13 @@ const allowSignal = (stationConfig, signal, target, aspect = -1, force = false, 
     try {
         switch (pathState) {
             case path_1.PathState.SAFE:
-                if (aspect === -1)
+                if (aspect == -1)
                     (0, signals_1.setSignal)(signal, signal_1.StandardSignalAspect.ALLOW, time);
                 else
                     (0, signals_1.setSignal)(signal, aspect, time);
                 break;
             case path_1.PathState.SAFE_CAUTION:
-                if (aspect === -1)
+                if (aspect == -1)
                     (0, signals_1.setSignal)(signal, signal_1.StandardSignalAspect.ALLOW_CAUTION, time);
                 else
                     (0, signals_1.setSignal)(signal, aspect, time);
