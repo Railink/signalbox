@@ -5,6 +5,7 @@ import { isWaypoint } from "@common/nodes/waypoint";
 import { LinkedListItem, DijkstraCalculator } from "dijkstra-calculator";
 import { getNode } from "../config/config.util";
 import { readSwitchState } from "../switches";
+import { randomBytes } from "crypto";
 
 export enum PathState {
     SAFE,
@@ -29,20 +30,20 @@ export const checkPathSate = (
     for (let step of calculatedPath) {
         const source = getNode(step.source, stationConfig);
         const target = getNode(step.target, stationConfig);
-        console.log(source, target);
 
         if (!source || !target) continue;
 
-        if (!canTravelBetween(source, target)) return PathState.UNSAFE;
+        if (!canTravelBetween(source, target)) {
+            console.log(source.id, target.id)
+            return PathState.UNSAFE
+        };
 
         if (isRailSwitch(source) && !directionChange) {
             directionChange = source.plus.node === target.id;
-            console.log(source.plus.node === target.id);
         }
 
         if (isRailSwitch(target) && !directionChange) {
             directionChange = target.plus.node === source.id;
-            console.log(target.plus.node === source.id);
         }
     }
 
@@ -97,8 +98,7 @@ export const calculatePath = (
         throw new Error("Invalid path nodes supplied!");
     }
 
-    const graph = new DijkstraCalculator();
-    graph.addVertex("___VOID___"); // Blank point for points with no further path
+    const graph = new DijkstraCalculator(); // Blank point for points with no further path
 
     pathNodes.forEach((pn) => {
         graph.addVertex(pn.id.toString()); // Add all points to the graph
@@ -107,14 +107,18 @@ export const calculatePath = (
     pathNodes.forEach((pn) => {
         // Add the connections between them
         if (isWaypoint(pn)) {
+            let randString = randomBytes(4).toString('hex');
+            graph.addVertex(`___VOID___[${randString}]`);
             graph.addEdge(
                 pn.id.toString(),
-                pn.neighbors.left?.node?.toString() ?? "___VOID___",
+                pn.neighbors.left?.node?.toString() ?? `___VOID___[${randString}]`,
                 pn.neighbors.left?.cost
             );
+            randString = randomBytes(4).toString('hex');
+            graph.addVertex(`___VOID___[${randString}]`);
             graph.addEdge(
                 pn.id.toString(),
-                pn.neighbors.right?.node?.toString() ?? "___VOID___",
+                pn.neighbors.right?.node?.toString() ?? `___VOID___[${randString}]`,
                 pn.neighbors.right?.cost
             );
         } else {
@@ -171,6 +175,10 @@ export const canTravelBetween = (
                 : target.plus.node === source.id
                 ? SwitchState.PLUS
                 : SwitchState.UNKNOWN;
+
+        // The target is behind the source
+        console.log(source.back, target.id, requiredTargetState, targetState)
+        if (source.back.node === target.id) return requiredTargetState == targetState;
 
         if (sourceState === SwitchState.MINUS) {
             // The target switch is in the same direction as the source switch

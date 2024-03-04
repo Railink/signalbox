@@ -1,25 +1,22 @@
 <template>
-    <div class="flex gap-6 flex-wrap">
+    <div class="flex gap-3 flex-wrap">
         <div
             v-for="state in switchState"
             :key="state.id"
             class="switch"
             @click="toggleSwitch(state.id, state.state == 0 ? 1 : 0)"
         >
-            <Icon
-                name="uil:arrow-up-right"
-                v-if="state.state === 1 && !isLocked(state.id)"
-                class="text-indicator-positive"
+            <span
+                v-if="state.state == 1 && !isLocked(state.id)"
+                class="icon-[uil--arrow-up-right] text-indicator-positive"
             />
-            <Icon
-                name="uil:arrow-right"
-                v-if="state.state === 0 && !isLocked(state.id)"
-                class="text-indicator-negative"
+            <span
+                v-if="state.state == 0 && !isLocked(state.id)"
+                class="icon-[uil--arrow-down-right] text-indicator-negative"
             />
-            <Icon
-                name="uil:lock"
+            <span
                 v-if="isLocked(state.id)"
-                class="text-indicator-ambient"
+                class="icon-[uil--lock] text-indicator-ambient"
             />
             <h2>{{ state.id }}</h2>
         </div>
@@ -41,6 +38,7 @@ let switchState = ref<(RailSwitch & NodeState)[]>([]);
 
 onMounted(async () => {
     switchState.value = await fetchSwitches();
+    console.log(switchState.value);
 });
 
 const isLocked = (switchId: number) => {
@@ -59,7 +57,7 @@ const isLocked = (switchId: number) => {
 const toggleSwitch = async (switchId: number, to: number) => {
     if (isLocked(switchId)) return;
     const switched = await axios.post<RailSwitch[]>(
-        `${useBaseURL()}/switches/${to == 0 ? "minus" : "plus"}/${switchId}`
+        `${useBaseURL()}/switches/${switchId}/set/${to}`
     );
     switchState.value = await fetchSwitches();
     await panelInjection?.panel().updatePanel(switchState.value);
@@ -68,6 +66,6 @@ const toggleSwitch = async (switchId: number, to: number) => {
 
 <style lang="scss" scoped>
 .switch {
-    @apply text-3xl bg-background px-2 flex items-center gap-4 border border-border rounded-lg cursor-pointer select-none;
+    @apply text-xl bg-background px-2 flex items-center gap-4 border border-border rounded-lg cursor-pointer select-none;
 }
 </style>

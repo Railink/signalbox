@@ -6,7 +6,7 @@ const __1 = require("../..");
 const path_1 = require("../../path");
 const signals_1 = require("../../signals");
 const allowSignal = (stationConfig, signal, target, aspect = -1, force = false, time) => {
-    if (aspect === signal_1.StandardSignalAspect.STOP || force) {
+    if (aspect === signal_1.StandardSignalAspect.STOP || aspect === signal.defaultAspect || force) {
         (0, signals_1.setSignal)(signal, aspect, time);
         return;
     }

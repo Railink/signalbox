@@ -26,6 +26,8 @@ const pathRoutes = (router) => {
     router.post("/path/queue/:id/next", (ctx, _next) => {
         ctx.body = (0, path_service_1.nextStep)(ctx.stationConfig, ctx.params.id);
     });
-    router.post("/path/queue/:id/destroy", (ctx, _next) => { });
+    router.post("/path/queue/:id/destroy", (ctx, _next) => {
+        ctx.body = (0, path_service_1.destroyPath)(ctx.params.id);
+    });
 };
 exports.default = pathRoutes;

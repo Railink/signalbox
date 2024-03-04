@@ -16,7 +16,6 @@ const config_controller_1 = __importDefault(require("./routes/config/config.cont
 const path_controller_1 = __importDefault(require("./routes/path/path.controller"));
 const koa_bodyparser_1 = __importDefault(require("koa-bodyparser"));
 const state_controller_1 = __importDefault(require("./routes/state/state.controller"));
-const signal_1 = require("@common/nodes/signal");
 const app_1 = __importDefault(require("./config/app"));
 const switches_1 = __importDefault(require("./config/switches"));
 const creators_1 = require("./controllers/creators");
@@ -24,6 +23,7 @@ const signals_1 = require("./signals");
 const switches_2 = require("./switches");
 const state_1 = require("@common/nodes/state");
 const signal_controller_1 = __importDefault(require("./routes/signal/signal.controller"));
+const switch_controller_1 = __importDefault(require("./routes/switch/switch.controller"));
 exports.CONFIG_PATH = path_1.default.join(__dirname, "..", "..", "..", "config");
 exports.CLIENT_PATH = path_1.default.join(__dirname, "..", "..", "..", "client", "dist");
 exports.logger = winston_1.default.createLogger({
@@ -64,13 +64,18 @@ try {
     if (appConfig.name || typeof appConfig.gpio === "object") {
         app.context.appConfig = appConfig;
         app.context.stationConfig = {
-            switches: switchConfig || [],
-            signals: signalConfig || [],
-            lighting: lightingConfig || [],
-            waypoints: waypointConfig || [],
+            switches: switchConfig !== null && switchConfig !== void 0 ? switchConfig : [],
+            signals: signalConfig !== null && signalConfig !== void 0 ? signalConfig : [],
+            lighting: lightingConfig !== null && lightingConfig !== void 0 ? lightingConfig : [],
+            waypoints: waypointConfig !== null && waypointConfig !== void 0 ? waypointConfig : [],
         };
-        switchConfig.forEach((railSwitch) => (0, switches_2.setSwitch)(railSwitch, state_1.SwitchState.MINUS));
-        signalConfig.forEach((railSignal) => (0, signals_1.setSignal)(railSignal, signal_1.StandardSignalAspect.STOP));
+        (0, signals_1.initBlinkLoop)(); // Initialize signal blink loop
+        app.context.stationConfig.switches.forEach((railSwitch) => {
+            console.log(`Rozjazd ${railSwitch.id} -----\nPin minusowy: #${railSwitch.minus.pin.id}\nPin plusowy: #${railSwitch.plus.pin.id}`);
+            (0, switches_2.setSwitch)(railSwitch, state_1.SwitchState.MINUS); // All switches to neutral state
+        });
+        app.context.stationConfig.signals.forEach((railSignal) => (0, signals_1.setSignal)(railSignal, railSignal.defaultAspect) // All signals to default aspects
+        );
     }
 }
 catch (e) {
@@ -83,7 +88,8 @@ if (!app.context.appConfig) {
 (0, config_controller_1.default)(exports.router); // Register config-related routes
 (0, state_controller_1.default)(exports.router); // Register node-state-related routes
 (0, path_controller_1.default)(exports.router); // Register path-related routes
-(0, signal_controller_1.default)(exports.router);
+(0, signal_controller_1.default)(exports.router); // and so on...
+(0, switch_controller_1.default)(exports.router);
 app.use((0, koa_bodyparser_1.default)());
 app.use((0, koa_static_1.default)(exports.CLIENT_PATH)) // Serve the dashboard
     .use(exports.router.routes()) // Register router routes

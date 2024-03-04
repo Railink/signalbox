@@ -5,9 +5,9 @@ import { RailWaypoint } from "@common/nodes/waypoint";
 import { Shape, Svg } from "@svgdotjs/svg.js";
 import { LinkedListItem } from "dijkstra-calculator";
 
-const SIZE_FACTOR = 25;
-const POINT_SIZE = 10;
-const FONT_SIZE = 14;
+const SIZE_FACTOR = 30;
+const POINT_SIZE = 7.5;
+const FONT_SIZE = 20;
 
 export interface PanelInjection {
     panel: () => StationPanel;
@@ -49,6 +49,20 @@ class StationPanel {
         this.errorColor = errorColor;
     }
 
+    private getSwitchDirection(node: RailNode) {
+        if ((node as RailWaypoint).neighbors) return;
+
+        const railSwitch = node as RailSwitch;
+        const minusNode = [...this.switches, ...this.waypoints].find(
+            (n) => n.id === railSwitch.minus.node
+        );
+
+        if (!minusNode || !minusNode.position) return;
+
+        if (minusNode?.position.x > railSwitch.position.x) return "right";
+        else return "left";
+    }
+
     private getSwitchOrientation(node: RailNode) {
         if ((node as RailWaypoint).neighbors) return;
 
@@ -67,8 +81,8 @@ class StationPanel {
         if (!minusNode || !plusNode || !backNode) return "up";
 
         if (
-            minusNode.position.y === backNode.position.y &&
-            backNode.position.y < plusNode.position.y
+            node.position.y < plusNode.position.y ||
+            node.position.y < minusNode.position.y
         ) {
             return "down";
         } else if (
@@ -87,8 +101,8 @@ class StationPanel {
         this.signals.forEach((signal) => {
             if (!this.canvas) return;
             const right =
-                nodes.find((n) => n.id === signal.switchFront)?.position?.x ?? 0 >
-                signal.position.x;
+                (nodes.find((n) => n.id === signal.switchFront)?.position?.x ??
+                0) > signal.position.x;
 
             this.canvas
                 .text(
@@ -96,13 +110,16 @@ class StationPanel {
                         ? signal.id.toString() + "►"
                         : "◄" + signal.id.toString()
                 )
-                .move(signal.position.x * SIZE_FACTOR, signal.position.y * SIZE_FACTOR - (POINT_SIZE * 3))
+                .move(
+                    signal.position.x * SIZE_FACTOR,
+                    signal.position.y * SIZE_FACTOR - (POINT_SIZE) * 3.5
+                )
                 .font({
                     fill: "#44403c",
                     family: "Calibri",
                     weight: 700,
                     size: `${FONT_SIZE}px`,
-                })
+                });
         });
         nodes.forEach((node) => {
             // Drawing lines between the points
@@ -119,17 +136,26 @@ class StationPanel {
             const name = (node as RailWaypoint).name ?? node.id.toString();
 
             if (!name.endsWith("-S")) {
+                const xPos =
+                    node.position.x * SIZE_FACTOR -
+                    (!!(node as RailSwitch).plus
+                        ? this.getSwitchDirection(node) === "left"
+                            ? SIZE_FACTOR
+                            : 0
+                        : 0);
+                const yPos =
+                    node.position.y * SIZE_FACTOR -
+                    (this.getSwitchOrientation(node) === "down"
+                        ? POINT_SIZE * 3.5
+                        : -((POINT_SIZE * 1.5) / 3));
+
                 this.canvas
                     ?.text(name)
-                    .move(
-                        node.position.x * SIZE_FACTOR,
-                        (node.position.y * SIZE_FACTOR) -
-                            (this.getSwitchOrientation(node) === "down"
-                                ? ((POINT_SIZE * 3))
-                                : -((POINT_SIZE * 2) / 3))
-                    )
+                    .move(xPos, yPos)
                     .font({
-                        fill: "#3D3D3D",
+                        fill: !!(node as RailSwitch).plus
+                            ? "#808080"
+                            : "#4f46e5",
                         family: "Calibri",
                         weight: 700,
                         size: `${FONT_SIZE}px`,
@@ -200,7 +226,7 @@ class StationPanel {
                     width: POINT_SIZE + 0.1,
                     linecap: "round",
                 })
-                .attr("onclick", "alert('ss')");
+                //.attr("onclick", "alert('ss')");
 
             this.canvas
                 ?.circle(POINT_SIZE)
@@ -209,7 +235,7 @@ class StationPanel {
                     s.position.x * SIZE_FACTOR - POINT_SIZE / 2,
                     s.position.y * SIZE_FACTOR - POINT_SIZE / 2
                 )
-                .attr("onclick", "alert('s')");
+                //.attr("onclick", "alert('s')");
 
             if (line) {
                 this.statusNodes.push(line);

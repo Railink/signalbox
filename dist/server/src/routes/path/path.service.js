@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.nextStep = exports.unlockPath = exports.setPath = exports.createPath = exports.getActiveQueues = exports.getActivePaths = void 0;
+exports.destroyPath = exports.nextStep = exports.unlockPath = exports.setPath = exports.createPath = exports.getActiveQueues = exports.getActivePaths = void 0;
 const state_1 = require("@common/nodes/state");
 const waypoint_1 = require("@common/nodes/waypoint");
 const crypto_1 = require("crypto");
@@ -9,6 +9,7 @@ const switches_1 = require("../../switches");
 const path_1 = require("../../path");
 const activePaths = new Map(); // Currently used paths
 const queues = new Map(); // Switching queues
+const lastQueuePath = new Map(); // Last path a queue has locked
 const getActivePaths = () => Array.from(activePaths, ([id, steps]) => {
     return { id, steps };
 });
@@ -35,15 +36,20 @@ const setPath = (stationConfig, steps, withSignals // TODO: Automatic signal set
             type: "plan",
             id: planId,
             steps: validatedPath,
+            path: "___NULL___",
         };
     }
     else {
-        if (steps.find((step) => Array.from(activePaths.values()).find((p) => p.find((s) => s.source === step.source)) // Another path includes a node required for this one
+        if (steps.find((step) => Array.from(activePaths.values()).find((p) => p.find((s) => s.source === step.source ||
+            s.source === step.target ||
+            s.target === step.source ||
+            s.target === step.target)) // Another path includes a node required for this one
         )) {
             return {
                 type: "result",
                 id: "___COLLISION___",
                 steps: [],
+                path: "___NULL___",
             };
         }
         steps.forEach((step) => {
@@ -63,16 +69,27 @@ const setPath = (stationConfig, steps, withSignals // TODO: Automatic signal set
                         return;
                     (0, switches_1.setSwitch)(source, state);
                 }
+                if (!(0, waypoint_1.isWaypoint)(target)) {
+                    console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", target, source);
+                    const state = target.minus.node === source.id
+                        ? state_1.SwitchState.MINUS
+                        : state_1.SwitchState.PLUS;
+                    if (target.back.node === source.id)
+                        return;
+                    (0, switches_1.setSwitch)(target, state);
+                }
             };
             setNode(sourceNode, targetNode);
             setNode(targetNode, sourceNode);
         });
-        activePaths.set((0, crypto_1.randomBytes)(20).toString("hex"), steps);
+        const pathId = (0, crypto_1.randomBytes)(20).toString("hex");
+        activePaths.set(pathId, steps);
         return {
             // semi-placeholder response, nothing to return from a single-step operation
             type: "result",
             id: "___SUCCESS___",
             steps: [steps],
+            path: pathId,
         };
     }
 };
@@ -88,30 +105,51 @@ const unlockPath = (id) => {
 };
 exports.unlockPath = unlockPath;
 const nextStep = (stationConfig, id) => {
+    var _a, _b;
     if (!queues.has(id)) {
         return {
             type: "result",
             id: "___INVQUEUE___",
             steps: [],
+            path: "___NULL___",
         };
     }
     const queue = queues.get(id);
     const nextStep = queue[0];
-    const result = (0, exports.setPath)(stationConfig, nextStep, false);
+    let result = (0, exports.setPath)(stationConfig, nextStep, false);
+    // If there's collision but the last path set by this queue includes the source node of this step try unlocking it
+    if (result.id === "___COLLISION___" &&
+        ((_b = activePaths
+            .get((_a = lastQueuePath.get(id)) !== null && _a !== void 0 ? _a : "")) === null || _b === void 0 ? void 0 : _b.find((s) => nextStep.find((step) => s.source === step.source ||
+            s.source === step.target ||
+            s.target === step.source ||
+            s.target === step.target)))) {
+        (0, exports.unlockPath)(lastQueuePath.get(id));
+        lastQueuePath.delete(id);
+        result = (0, exports.setPath)(stationConfig, nextStep, false);
+    }
     if (result.id === "___COLLISION___") {
-        return {
-            type: "result",
-            id: "___COLLISION___",
-            steps: [],
-        };
+        return result;
     }
     queue.shift();
     if (queue.length <= 0)
         queues.delete(id);
+    else
+        lastQueuePath.set(id, result.path);
+    return {
+        type: "result",
+        id: "___SUCCESS___",
+        steps: [],
+        path: result.path,
+    };
+};
+exports.nextStep = nextStep;
+const destroyPath = (id) => {
+    queues.delete(id);
     return {
         type: "result",
         id: "___SUCCESS___",
         steps: [],
     };
 };
-exports.nextStep = nextStep;
+exports.destroyPath = destroyPath;

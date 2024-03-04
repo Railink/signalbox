@@ -1,7 +1,7 @@
 <template>
     <div class="page-wrapper bg-background">
         <PanelContext id="dashboard-panel">
-            <Panel way-color="#3498db" line-color="#000" path-color="#be123c" id="dashboard-panel"
+            <Panel way-color="#3b82f6" line-color="#0f172a" path-color="#be123c" id="dashboard-panel"
                 class="col-span-12 panel" ref="mainPanel" />
             <div class="content-wrapper bg-panel">
                 <TabList :elements="pages" />
@@ -17,7 +17,6 @@
 import TabList from './components/TabList.vue';
 import Panel from './components/Panel.vue';
 import PanelContext from './components/PanelContext.vue';
-import { ref } from 'vue';
 
 const pages = [
     {

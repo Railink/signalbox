@@ -43,7 +43,7 @@ const signalRoutes = (router: Router<DefaultState, AppContext>) => {
             ctx.stationConfig,
             signal,
             "",
-            StandardSignalAspect.STOP
+            signal.defaultAspect
         );
     });
 };

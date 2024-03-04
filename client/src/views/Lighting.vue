@@ -6,15 +6,13 @@
             class="light"
             @click="toggleLight(state.name, state.state === 1 ? 'off' : 'on')"
         >
-            <Icon
-                name="uil:lightbulb"
+            <span
                 v-if="state.state === 1"
-                class="text-indicator-positive"
+                class="icon-[uil--lightbulb] text-indicator-positive"
             />
-            <Icon
-                name="uil:lightbulb"
+            <span
                 v-if="state.state !== 0"
-                class="text-indicator-negative"
+                class="icon-[uil--lightbulb] text-indicator-negative"
             />
             <h2>{{ state.name }}</h2>
         </div>

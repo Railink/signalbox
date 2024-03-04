@@ -13,6 +13,7 @@ type RailNode = RailSwitch | RailWaypoint | null;
 
 const activePaths: Map<string, LinkedListItem[]> = new Map(); // Currently used paths
 const queues: Map<string, LinkedListItem[][]> = new Map(); // Switching queues
+const lastQueuePath: Map<string, string> = new Map(); // Last path a queue has locked
 
 export const getActivePaths = (): { id: string; steps: LinkedListItem[] }[] =>
     Array.from(activePaths, ([id, steps]) => {
@@ -56,13 +57,20 @@ export const setPath = (
             type: "plan",
             id: planId,
             steps: validatedPath,
+            path: "___NULL___",
         };
     } else {
         if (
             steps.find(
                 (step) =>
                     Array.from(activePaths.values()).find((p) =>
-                        p.find((s) => s.source === step.source)
+                        p.find(
+                            (s) =>
+                                s.source === step.source ||
+                                s.source === step.target ||
+                                s.target === step.source ||
+                                s.target === step.target
+                        )
                     ) // Another path includes a node required for this one
             )
         ) {
@@ -70,6 +78,7 @@ export const setPath = (
                 type: "result",
                 id: "___COLLISION___", // Indicate that the path collides with an already confirmed one
                 steps: [],
+                path: "___NULL___",
             };
         }
 
@@ -92,19 +101,30 @@ export const setPath = (
                     if (source.back.node === target.id) return;
                     setSwitch(source, state);
                 }
+                if (!isWaypoint(target)) {
+                    console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", target, source);
+                    const state =
+                        target.minus.node === source.id
+                            ? SwitchState.MINUS
+                            : SwitchState.PLUS;
+                    if (target.back.node === source.id) return;
+                    setSwitch(target, state);
+                }
             };
 
             setNode(sourceNode, targetNode);
             setNode(targetNode, sourceNode);
         });
 
-        activePaths.set(randomBytes(20).toString("hex"), steps);
+        const pathId = randomBytes(20).toString("hex");
+        activePaths.set(pathId, steps);
 
         return {
             // semi-placeholder response, nothing to return from a single-step operation
             type: "result",
             id: "___SUCCESS___",
             steps: [steps],
+            path: pathId,
         };
     }
 };
@@ -127,25 +147,53 @@ export const nextStep = (
             type: "result",
             id: "___INVQUEUE___",
             steps: [],
+            path: "___NULL___",
         };
     }
 
     const queue = queues.get(id)!!;
     const nextStep = queue[0];
-    const result = setPath(stationConfig, nextStep, false);
+    let result = setPath(stationConfig, nextStep, false);
+
+    // If there's collision but the last path set by this queue includes the source node of this step try unlocking it
+    if (
+        result.id === "___COLLISION___" &&
+        activePaths
+            .get(lastQueuePath.get(id) ?? "")
+            ?.find((s) =>
+                nextStep.find(
+                    (step) =>
+                        s.source === step.source ||
+                        s.source === step.target ||
+                        s.target === step.source ||
+                        s.target === step.target
+                )
+            )
+    ) {
+        unlockPath(lastQueuePath.get(id)!!);
+        lastQueuePath.delete(id);
+        result = setPath(stationConfig, nextStep, false);
+    }
 
     if (result.id === "___COLLISION___") {
-        return {
-            type: "result",
-            id: "___COLLISION___",
-            steps: [],
-        };
+        return result;
     }
 
     queue.shift();
 
     if (queue.length <= 0) queues.delete(id);
+    else lastQueuePath.set(id, result.path);
 
+    return {
+        type: "result",
+        id: "___SUCCESS___",
+        steps: [],
+        path: result.path,
+    };
+};
+
+export const destroyPath = (id: string) => {
+    queues.delete(id);
     return {
         type: "result",
         id: "___SUCCESS___",

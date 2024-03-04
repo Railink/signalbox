@@ -12,7 +12,7 @@ export const allowSignal = (
     force: boolean = false,
     time?: number
 ) => {
-    if (aspect === StandardSignalAspect.STOP || force) {
+    if (aspect === StandardSignalAspect.STOP || aspect === signal.defaultAspect || force) {
         setSignal(signal, aspect, time);
         return;
     }

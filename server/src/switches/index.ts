@@ -28,8 +28,15 @@ export const readSwitchState = (railSwitch: RailSwitch) => {
     const minusState = readPin(minusPin.id);
     const plusState = readPin(plusPin.id);
 
-    if (minusState === plusState) return SwitchState.UNKNOWN;
-    return minusState === minusPin.value.enabled
-        ? SwitchState.MINUS
-        : SwitchState.PLUS;
+    if (
+        minusState === minusPin.value.enabled &&
+        plusState === plusPin.value.disabled
+    )
+        return SwitchState.MINUS;
+    else if (
+        plusState === plusPin.value.enabled &&
+        minusState === minusPin.value.disabled
+    )
+        return SwitchState.PLUS;
+    else return SwitchState.UNKNOWN;
 };

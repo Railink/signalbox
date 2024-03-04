@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const signals_1 = require("../../signals");
 const signal_service_1 = require("./signal.service");
-const signal_1 = require("@common/nodes/signal");
 const signalRoutes = (router) => {
     router.post("/signals/set/:signal/:target/:aspect/:time", (ctx, _next) => {
         const signal = (0, signals_1.getRailSignal)(ctx.stationConfig, ctx.params.signal);
@@ -26,7 +25,7 @@ const signalRoutes = (router) => {
         const signal = (0, signals_1.getRailSignal)(ctx.stationConfig, ctx.params.signal);
         if (!signal)
             throw new Error("Invalid signal ID!");
-        ctx.body = (0, signal_service_1.allowSignal)(ctx.stationConfig, signal, "", signal_1.StandardSignalAspect.STOP);
+        ctx.body = (0, signal_service_1.allowSignal)(ctx.stationConfig, signal, "", signal.defaultAspect);
     });
 };
 exports.default = signalRoutes;

@@ -2,6 +2,7 @@ import Router from "@koa/router";
 import { DefaultState } from "koa";
 import {
     createPath,
+    destroyPath,
     nextStep,
     setPath,
     unlockPath,
@@ -44,8 +45,9 @@ const pathRoutes = (router: Router<DefaultState, AppContext>) => {
         ctx.body = nextStep(ctx.stationConfig, ctx.params.id);
     });
 
-    router.post("/path/queue/:id/destroy", (ctx, _next) => {});
-
+    router.post("/path/queue/:id/destroy", (ctx, _next) => {
+        ctx.body = destroyPath(ctx.params.id);
+    });
 };
 
 export default pathRoutes;

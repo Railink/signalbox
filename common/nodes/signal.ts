@@ -4,6 +4,7 @@ import { PinSignal } from "../data/pin";
 export interface RailSignal {
     id: number;
     pulse: boolean;
+    defaultAspect: number;
     aspects: SignalAspect[];
     switchFront: number;
     position: Position;
@@ -20,4 +21,6 @@ export enum StandardSignalAspect {
     ALLOW,
     ALLOW_CAUTION,
     NEXT_STOP,
+    SWITCHING_DENY,
+    SWITCHING_ALLOW
 }

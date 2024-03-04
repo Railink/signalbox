@@ -8,6 +8,7 @@ class TEST001 {
         const pinCount = this.environment.get("PIN_COUNT");
         if (!pinCount || !(0, util_1.isNumber)(pinCount) || Number(pinCount) < 0)
             throw new Error("The pin count must be a positive number!");
+        let i = 0;
         this.pinCount = Number(this.environment.get("PIN_COUNT"));
         this.pins = Array(this.pinCount).fill(0, 0, this.pinCount);
     }

@@ -7,6 +7,7 @@ const waypoint_1 = require("@common/nodes/waypoint");
 const dijkstra_calculator_1 = require("dijkstra-calculator");
 const config_util_1 = require("../config/config.util");
 const switches_1 = require("../switches");
+const crypto_1 = require("crypto");
 var PathState;
 (function (PathState) {
     PathState[PathState["SAFE"] = 0] = "SAFE";
@@ -22,18 +23,18 @@ const checkPathSate = (source, target, stationConfig) => {
     for (let step of calculatedPath) {
         const source = (0, config_util_1.getNode)(step.source, stationConfig);
         const target = (0, config_util_1.getNode)(step.target, stationConfig);
-        console.log(source, target);
         if (!source || !target)
             continue;
-        if (!(0, exports.canTravelBetween)(source, target))
+        if (!(0, exports.canTravelBetween)(source, target)) {
+            console.log(source.id, target.id);
             return PathState.UNSAFE;
+        }
+        ;
         if ((0, switch_1.isRailSwitch)(source) && !directionChange) {
             directionChange = source.plus.node === target.id;
-            console.log(source.plus.node === target.id);
         }
         if ((0, switch_1.isRailSwitch)(target) && !directionChange) {
             directionChange = target.plus.node === source.id;
-            console.log(target.plus.node === source.id);
         }
     }
     if (directionChange)
@@ -73,8 +74,7 @@ const calculatePath = (start, finish, stationConfig) => {
     if (!(nodes.includes(start) || nodes.includes(finish))) {
         throw new Error("Invalid path nodes supplied!");
     }
-    const graph = new dijkstra_calculator_1.DijkstraCalculator();
-    graph.addVertex("___VOID___"); // Blank point for points with no further path
+    const graph = new dijkstra_calculator_1.DijkstraCalculator(); // Blank point for points with no further path
     pathNodes.forEach((pn) => {
         graph.addVertex(pn.id.toString()); // Add all points to the graph
     });
@@ -82,8 +82,12 @@ const calculatePath = (start, finish, stationConfig) => {
         var _a, _b, _c, _d, _e, _f, _g, _h;
         // Add the connections between them
         if ((0, waypoint_1.isWaypoint)(pn)) {
-            graph.addEdge(pn.id.toString(), (_c = (_b = (_a = pn.neighbors.left) === null || _a === void 0 ? void 0 : _a.node) === null || _b === void 0 ? void 0 : _b.toString()) !== null && _c !== void 0 ? _c : "___VOID___", (_d = pn.neighbors.left) === null || _d === void 0 ? void 0 : _d.cost);
-            graph.addEdge(pn.id.toString(), (_g = (_f = (_e = pn.neighbors.right) === null || _e === void 0 ? void 0 : _e.node) === null || _f === void 0 ? void 0 : _f.toString()) !== null && _g !== void 0 ? _g : "___VOID___", (_h = pn.neighbors.right) === null || _h === void 0 ? void 0 : _h.cost);
+            let randString = (0, crypto_1.randomBytes)(4).toString('hex');
+            graph.addVertex(`___VOID___[${randString}]`);
+            graph.addEdge(pn.id.toString(), (_c = (_b = (_a = pn.neighbors.left) === null || _a === void 0 ? void 0 : _a.node) === null || _b === void 0 ? void 0 : _b.toString()) !== null && _c !== void 0 ? _c : `___VOID___[${randString}]`, (_d = pn.neighbors.left) === null || _d === void 0 ? void 0 : _d.cost);
+            randString = (0, crypto_1.randomBytes)(4).toString('hex');
+            graph.addVertex(`___VOID___[${randString}]`);
+            graph.addEdge(pn.id.toString(), (_g = (_f = (_e = pn.neighbors.right) === null || _e === void 0 ? void 0 : _e.node) === null || _f === void 0 ? void 0 : _f.toString()) !== null && _g !== void 0 ? _g : `___VOID___[${randString}]`, (_h = pn.neighbors.right) === null || _h === void 0 ? void 0 : _h.cost);
         }
         else {
             console.log(pn);
@@ -118,6 +122,10 @@ const canTravelBetween = (source, target) => {
             : target.plus.node === source.id
                 ? state_1.SwitchState.PLUS
                 : state_1.SwitchState.UNKNOWN;
+        // The target is behind the source
+        console.log(source.back, target.id, requiredTargetState, targetState);
+        if (source.back.node === target.id)
+            return requiredTargetState == targetState;
         if (sourceState === state_1.SwitchState.MINUS) {
             // The target switch is in the same direction as the source switch
             if (source.minus.node === target.id &&

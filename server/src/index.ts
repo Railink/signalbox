@@ -19,10 +19,12 @@ import { RailWaypoint } from "@common/nodes/waypoint";
 import verifyAppConfig from "./config/app";
 import verifySwitches from "./config/switches";
 import { controllerCreators } from "./controllers/creators";
-import { setSignal } from "./signals";
+import { initBlinkLoop, setSignal } from "./signals";
 import { setSwitch } from "./switches";
 import { SwitchState } from "@common/nodes/state";
 import signalRoutes from "./routes/signal/signal.controller";
+import switchRoutes from "./routes/switch/switch.controller";
+import TEST001 from "./controllers/TEST001";
 
 export const CONFIG_PATH = path.join(__dirname, "..", "..", "..", "config");
 export const CLIENT_PATH = path.join(
@@ -89,19 +91,23 @@ try {
     if (appConfig.name || typeof appConfig.gpio === "object") {
         app.context.appConfig = appConfig;
         app.context.stationConfig = {
-            switches: switchConfig || [],
-            signals: signalConfig || [],
-            lighting: lightingConfig || [],
-            waypoints: waypointConfig || [],
+            switches: switchConfig ?? [],
+            signals: signalConfig ?? [],
+            lighting: lightingConfig ?? [],
+            waypoints: waypointConfig ?? [],
         };
 
-        switchConfig.forEach((railSwitch) =>
-            setSwitch(railSwitch, SwitchState.MINUS)
+        initBlinkLoop(); // Initialize signal blink loop
+
+        app.context.stationConfig.switches.forEach((railSwitch) => {
+            console.log(`Rozjazd ${railSwitch.id} -----\nPin minusowy: #${railSwitch.minus.pin.id}\nPin plusowy: #${railSwitch.plus.pin.id}`);
+            setSwitch(railSwitch, SwitchState.MINUS) // All switches to neutral state
+        });
+
+        app.context.stationConfig.signals.forEach((railSignal) =>
+            setSignal(railSignal, railSignal.defaultAspect) // All signals to default aspects
         );
 
-        signalConfig.forEach((railSignal) =>
-            setSignal(railSignal, StandardSignalAspect.STOP)
-        );
     }
 } catch (e: any) {
     logger.error((e as YAMLException).message);
@@ -115,7 +121,8 @@ if (!app.context.appConfig) {
 configRoutes(router); // Register config-related routes
 stateRoutes(router); // Register node-state-related routes
 pathRoutes(router); // Register path-related routes
-signalRoutes(router);
+signalRoutes(router); // and so on...
+switchRoutes(router);
 
 app.use(bodyParser());
 app.use(serve(CLIENT_PATH)) // Serve the dashboard

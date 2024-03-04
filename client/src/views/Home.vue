@@ -7,11 +7,10 @@
             <article>
                 <h1 class="text-3xl font-semibold">Potwierdzenie przebiegu</h1>
                 <div class="flex items-center gap-2 text-2xl mt-3">
-                    <h2>{{ startNode }}</h2>
+                    <h2>{{ nameMap.get(startNode?.toString() ?? "0") }}</h2>
                     <div>
-                        <Icon
-                            icon="uil:arrow-circle-right"
-                            class="text-3xl text-indicator-ambient"
+                        <span
+                            class="align-text-bottom icon-[uil--arrow-circle-right] text-3xl text-indicator-ambient"
                         />
                     </div>
                     <h2
@@ -21,12 +20,11 @@
                         Manewry
                     </h2>
                     <div v-if="currentCheckedPath.length > 1">
-                        <Icon
-                            icon="uil:arrow-circle-right"
-                            class="text-3xl text-indicator-ambient"
+                        <span
+                            class="align-text-bottom icon-[uil--arrow-circle-right] text-3xl text-indicator-ambient"
                         />
                     </div>
-                    <h2>{{ finishNode }}</h2>
+                    <h2>{{ nameMap.get(finishNode?.toString() ?? "0") }}</h2>
                 </div>
                 <div class="path-confirmation">
                     <button
@@ -46,12 +44,49 @@
         </Modal>
         <Modal :show="queueModalVisible" @close="queueModalVisible = false">
             <article>
-                <h1 class="text-3xl font-semibold">Manewry</h1>
-                <div class="flex items-center gap-2 text-2xl mt-3"></div>
+                <div class="flex gap-4 items-end">
+                    <h1 class="text-2xl font-semibold">Manewry</h1>
+                    <div class="flex items-center gap-2 text-xl mt-2">
+                        <h2>
+                            {{ selectedQueueSource }}
+                        </h2>
+                        <div class="">
+                            <span
+                                class="align-text-bottom icon-[uil--arrow-circle-right] text-2xl text-indicator-ambient"
+                            />
+                        </div>
+                        <h2>{{ selectedQueueTarget }}</h2>
+                    </div>
+                </div>
+                <h1 class="text-xl font-semibold">Kroki</h1>
+                <ul class="mt-1 h-64 max-h-64 overflow-auto">
+                    <li
+                        v-for="(step, i) in activeQueues.get(selectedQueue)"
+                        :key="i"
+                        class="flex gap-2 items-center text-lg mb-2"
+                    >
+                        <button
+                            @click="nextStep(selectedQueue)"
+                            :disabled="i != 0"
+                            class="bg-indicator-positive hover:enabled:bg-indicator-positive-darker disabled:bg-slate-500 px-2 py-1 text-white rounded-md font-semibold"
+                        >
+                            Wykonaj
+                        </button>
+                        <h2>
+                            {{ nameMap.get(step[0].source) }}
+                        </h2>
+                        <div class="">
+                            <span
+                                class="align-text-bottom icon-[uil--arrow-circle-right] text-xl text-indicator-ambient"
+                            />
+                        </div>
+                        <h2>{{ nameMap.get(step[step.length - 1].target) }}</h2>
+                    </li>
+                </ul>
                 <div class="path-confirmation">
                     <button
-                        class="cancel"
-                        @click="pathConfirmationModalVisible = false"
+                        class="bg-indicator-negative hover:bg-indicator-negative-darker"
+                        @click="queueModalVisible = false"
                     >
                         Zamknij
                     </button>
@@ -84,20 +119,23 @@
                 >
                     <select name="start" id="start" v-model="startNode">
                         <option
-                            v-for="point in pointList"
+                            v-for="point in pointList.filter(
+                                (p) => !p.name.endsWith('-S')
+                            )"
                             :value="point.id"
                             :key="point.id"
                         >
                             {{ point.name ?? point.id }}
                         </option>
                     </select>
-                    <Icon
-                        icon="uil:arrow-circle-right"
-                        class="text-3xl text-indicator-ambient"
+                    <span
+                        class="icon-[uil--arrow-circle-right] text-3xl text-indicator-ambient"
                     />
                     <select name="finish" id="finish" v-model="finishNode">
                         <option
-                            v-for="point in pointList"
+                            v-for="point in pointList.filter(
+                                (p) => !p.name.endsWith('-S')
+                            )"
                             :value="point.id"
                             :key="point.id"
                         >
@@ -115,16 +153,15 @@
                 >
                     <select name="start" id="start" v-model="selectedSignal">
                         <option
-                            v-for="signal in signalList"
+                            v-for="signal in signalList.sort(s => s.id)"
                             :value="signal.id"
                             :key="signal.id"
                         >
                             {{ signal.id }}
                         </option>
                     </select>
-                    <Icon
-                        icon="uil:arrow-circle-right"
-                        class="text-3xl text-indicator-ambient"
+                    <span
+                        class="icon-[uil--arrow-circle-right] text-3xl text-indicator-ambient"
                     />
                     <select
                         name="finish"
@@ -132,16 +169,17 @@
                         v-model="signalDestination"
                     >
                         <option
-                            v-for="point in pointList"
+                            v-for="point in pointList.filter(
+                                (p) => !p.name.endsWith('-S')
+                            )"
                             :value="point.id"
                             :key="point.id"
                         >
                             {{ point.name ?? point.id }}
                         </option>
                     </select>
-                    <Icon
-                        icon="uil:traffic-light"
-                        class="text-3xl text-indicator-ambient"
+                    <span
+                        class="icon-[uil--traffic-light] text-3xl text-indicator-ambient"
                     />
                     <select
                         class="w-24"
@@ -160,9 +198,8 @@
                             {{ aspect.name }}
                         </option>
                     </select>
-                    <Icon
-                        icon="uil:stopwatch"
-                        class="text-3xl text-indicator-ambient"
+                    <span
+                        class="icon-[uil--stopwatch] text-3xl text-indicator-ambient"
                     />
                     <select name="time" id="time" v-model="signalTime">
                         <option value="0">∞</option>
@@ -183,86 +220,92 @@
                 </form>
             </section>
         </div>
-        <section class="basis-1/3">
+        <section class="basis-1/3 flex flex-col">
             <h1>Aktywne przebiegi</h1>
-            <div class="path" v-for="[id, steps] in activePaths">
-                <button @click="resetPath(id)">
-                    <Icon
-                        icon="uil:link-broken"
-                        class="text-3xl text-indicator-negative hover:text-indicator-negative-darker"
+            <ul class="min-h-64 h-64 max-h-64 overflow-y-auto">
+                <li class="path" v-for="[id, steps] in activePaths">
+                    <button @click="resetPath(id)" class="contents">
+                        <span
+                            class="icon-[uil--link-broken] text-3xl text-indicator-negative hover:text-indicator-negative-darker"
+                        />
+                    </button>
+                    <h2>{{ nameMap.get(steps[0].source) }}</h2>
+                    <span
+                        class="icon-[uil--arrow-circle-right] text-3xl text-indicator-ambient"
                     />
-                </button>
-                <h2>{{ steps[0].source }}</h2>
-                <Icon
-                    icon="uil:arrow-circle-right"
-                    class="text-3xl text-indicator-ambient"
-                />
-                <h2>{{ steps[steps.length - 1].target }}</h2>
-            </div>
+                    <h2>{{ nameMap.get(steps[steps.length - 1].target) }}</h2>
+                </li>
+            </ul>
         </section>
-        <section class="basis-1/3">
+        <section class="basis-1/3 flex flex-col">
             <h1>Aktywne manewry</h1>
-            <div class="path" v-for="[id, steps] in activeQueues">
-                <button @click="resetPath(id)" class="-mr-2">
-                    <Icon
-                        icon="uil:trash"
-                        class="text-3xl text-indicator-negative hover:text-indicator-negative-darker"
+            <ul class="min-h-64 h-64 max-h-64 overflow-y-auto">
+                <li class="path" v-for="[id, steps] in activeQueues">
+                    <button @click="resetPath(id)" class="-mr-2 contents">
+                        <span
+                            class="icon-[uil--trash] text-3xl text-indicator-negative hover:text-indicator-negative-darker"
+                        />
+                    </button>
+                    <button @click="openQueueModal(id)" class="contents">
+                        <span
+                            class="icon-[uil--arrow-up-right] text-3xl text-indicator-ambient hover:bg-indicator-ambient-darker hover:text-background rounded-lg"
+                        />
+                    </button>
+                    <h2>{{ nameMap.get(steps[0][0].source) }}</h2>
+                    <span
+                        class="icon-[uil--arrow-circle-right] text-3xl text-indicator-ambient"
                     />
-                </button>
-                <button @click="openQueueModal(id)">
-                    <Icon
-                        icon="uil:arrow-up-right"
-                        class="text-3xl text-indicator-ambient hover:bg-indicator-ambient-darker hover:text-background rounded-lg"
-                    />
-                </button>
-                <h2>{{ steps[0][0].source }}</h2>
-                <Icon
-                    icon="uil:arrow-circle-right"
-                    class="text-3xl text-indicator-ambient"
-                />
-                <h2>
-                    {{
-                        steps[steps.length - 1][
-                            steps[steps.length - 1].length - 1
-                        ].target
-                    }}
-                </h2>
-            </div>
+                    <h2>
+                        {{
+                            nameMap.get(
+                                steps[steps.length - 1][
+                                    steps[steps.length - 1].length - 1
+                                ].target
+                            )
+                        }}
+                    </h2>
+                </li>
+            </ul>
         </section>
         <section class="basis-1/3">
-            <h1>Semafory</h1>
-            <div class="flex gap-2 flex-wrap mt-3">
-                <div class="signal" v-for="signal in signalList">
-                    <button @click="resetSignal(signal.id)">
-                        <Icon
-                            icon="uiw:stop"
-                            class="text-xl 2xl:text-3xl text-indicator-negative hover:text-indicator-negative-darker"
+            <h1 class="pb-3">Semafory</h1>
+            <ul
+                class="min-h-64 h-64 max-h-64 overflow-y-auto flex gap-2 flex-wrap justify-start content-start"
+            >
+                <li class="signal" v-for="signal in signalList">
+                    <button @click="resetSignal(signal.id)" class="contents">
+                        <span
+                            class="icon-[uiw--stop] text-xl 2xl:text-3xl text-indicator-negative hover:text-indicator-negative-darker"
                             v-if="signal.state === 0"
                         />
-                        <Icon
-                            icon="uiw:down-circle"
-                            class="text-xl 2xl:text-3xl text-indicator-positive hover:text-indicator-positive-darker"
-                            v-if="signal.state === 1"
+                        <span
+                            class="icon-[uiw--down-circle] text-xl 2xl:text-3xl text-indicator-positive hover:text-indicator-positive-darker"
+                            v-else-if="signal.state === 1"
                         />
-                        <Icon
-                            icon="uiw:down-circle"
-                            class="text-xl 2xl:text-3xl text-indicator-caution hover:text-indicator-caution-darker"
-                            v-if="signal.state === 2"
+                        <span
+                            class="icon-[uiw--down-circle] text-xl 2xl:text-3xl text-indicator-caution hover:text-indicator-caution-darker"
+                            v-else-if="signal.state === 2"
                         />
-                        <Icon
-                            icon="uiw:minus-circle"
-                            class="text-xl 2xl:text-3xl text-indicator-caution hover:text-indicator-caution-darker"
-                            v-if="signal.state === 3"
+                        <span
+                            class="icon-[uiw--minus-circle] text-xl 2xl:text-3xl text-indicator-caution hover:text-indicator-caution-darker"
+                            v-else-if="signal.state === 3"
                         />
-                        <Icon
-                            icon="uiw:minus-circle"
-                            class="text-xl 2xl:text-3xl text-slate-500 hover:text-indicator-positive-darker"
-                            v-if="signal.state === -1"
+                        <span
+                            class="icon-[uiw--stop] text-xl 2xl:text-3xl text-indigo-300 hover:text-indigo-500"
+                            v-else-if="signal.state === 4"
+                        />
+                        <span
+                            class="icon-[uiw--down-circle] text-xl 2xl:text-3xl text-slate-300 hover:text-slate-500"
+                            v-else-if="signal.state === 5"
+                        />
+                        <span
+                            class="icon-[uiw--question-circle] text-xl 2xl:text-3xl text-slate-500 hover:text-slate-700"
+                            v-else
                         />
                     </button>
                     <h2>{{ signal.id }}</h2>
-                </div>
-            </div>
+                </li>
+            </ul>
         </section>
     </main>
 </template>
@@ -270,8 +313,7 @@
 <script setup lang="ts">
 import axios from "axios";
 import { LinkedListItem } from "dijkstra-calculator";
-import { Icon } from "@iconify/vue";
-import { ref, inject, onMounted, reactive } from "vue";
+import { ref, inject, onMounted, reactive, watchEffect, watch } from "vue";
 import { RailSignal } from "@common/nodes/signal";
 import { NodeState } from "@common/nodes/state";
 import { RailWaypoint } from "@common/nodes/waypoint";
@@ -302,16 +344,22 @@ const selectedSignal = ref<number>();
 const signalDestination = ref<number>();
 const signalAspect = ref<number>(-1);
 const signalTime = ref<number>(0);
+const selectedQueue = ref<string>("0");
+const selectedQueueSource = ref<string>("???");
+const selectedQueueTarget = ref<string>("???");
 const panelInjection = inject<PanelInjection>("dashboard-panel");
 
 const activePaths = reactive<Map<string, LinkedListItem[]>>(new Map());
 const activeQueues = reactive<Map<string, LinkedListItem[][]>>(new Map());
 const error = reactive<ErrorModal>({ name: "?", message: "" });
+const nameMap = reactive<Map<string, string>>(new Map());
+const currentCheckedPath = ref<CheckedPath>([]);
 
 const pathConfirmationModalVisible = ref(false);
 const errorModalVisible = ref(false);
 const queueModalVisible = ref(false);
-const currentCheckedPath = ref<CheckedPath>([]);
+
+watch(selectedSignal, () => (signalAspect.value = -1));
 
 onMounted(async () => {
     pointList.value = await fetchWaypointConfig();
@@ -321,6 +369,10 @@ onMounted(async () => {
         activeQueues.set(p.id, p.steps)
     );
     await updateSignals();
+    pointList.value.forEach((p) => nameMap.set(p.id.toString(), p.name));
+    (await fetchSwitches()).forEach((s) =>
+        nameMap.set(s.id.toString(), `${s.id}`)
+    );
 });
 
 const checkPath = async (from: string, to: string): Promise<CheckedPath> => {
@@ -379,10 +431,14 @@ const resetPath = async (id: string) => {
     await axios.post(`${useBaseURL()}/path/unlock/${id}`);
     await axios.get(`${useBaseURL()}/state/switches`).then(async () => {
         panelInjection?.panel().updatePanel(await fetchSwitches());
-        panelInjection?.panel().updatePaths([]);
     });
     activePaths.clear();
-    (await fetchCurrentPaths()).forEach((p) => activePaths.set(p.id, p.steps));
+    const setPaths = [] as LinkedListItem[][];
+    (await fetchCurrentPaths()).forEach((p) => {
+        activePaths.set(p.id, p.steps);
+        setPaths.push(p.steps);
+    });
+    panelInjection?.panel().updatePaths(setPaths);
 };
 
 const setSignal = async () => {
@@ -417,12 +473,55 @@ const resetSignal = async (signal: number) => {
     signalList.value = await fetchSignals();
 };
 
-const openQueueModal = async (id: string) => {};
+const openQueueModal = async (id: string) => {
+    selectedQueue.value = id;
+    const queue = activeQueues.get(id);
+    if (!queue) return;
+    selectedQueueSource.value = nameMap.get(queue[0][0].source) ?? "Unknown";
+    selectedQueueTarget.value =
+        nameMap.get(
+            queue[queue.length - 1][queue[queue.length - 1].length - 1].target
+        ) ?? "Unknown";
+    queueModalVisible.value = true;
+};
+
+const nextStep = async (id: string) => {
+    const result = (
+        await axios.post<{
+            type: "result";
+            id: "___SUCCESS___" | "___COLLISION___" | "___INVQUEUE___";
+            steps: [];
+        }>(`${useBaseURL()}/path/queue/${id}/next`)
+    ).data;
+
+    switch (result.id) {
+        case "___INVQUEUE___":
+            return;
+        case "___COLLISION___":
+            errorModalVisible.value = true;
+            error.name = "Błąd ustawiania przebiegu";
+            error.message = "Ten przebieg koliduje z aktywnym przebiegiem";
+            return;
+        case "___SUCCESS___":
+            activeQueues.clear();
+            (await fetchCurrentQueues()).forEach((p) =>
+                activeQueues.set(p.id, p.steps)
+            );
+            panelInjection?.panel().updatePanel(await fetchSwitches());
+            fetchCurrentPaths().then((currentPaths) => {
+                activePaths.clear();
+                currentPaths.forEach((p) => activePaths.set(p.id, p.steps));
+                panelInjection
+                    ?.panel()
+                    .updatePaths(currentPaths.map((p) => p.steps));
+            });
+    }
+};
 </script>
 
 <style lang="scss" scoped>
 .path {
-    button {
+    button:last-child {
         @apply mr-2;
     }
     @apply my-3 flex gap-2 items-center bg-background w-fit px-2 py-1 rounded-lg border-border/50 border;
@@ -432,7 +531,7 @@ const openQueueModal = async (id: string) => {};
     button {
         @apply 2xl:mr-2 mr-1;
     }
-    @apply 2xl:text-xl flex gap-2 items-center bg-background w-fit px-1 2xl:px-2 py-1 rounded-lg border-border/50 border;
+    @apply h-fit 2xl:text-xl flex gap-2 items-center bg-background w-fit px-1 2xl:px-2 py-1 rounded-lg border-border/50 border;
 }
 
 main {
@@ -453,7 +552,8 @@ select {
     }
 }
 
-button[type="submit"] {
+button[type="submit"],
+button.confirm-queue {
     @apply bg-indicator-ambient hover:bg-indicator-ambient-darker px-2 py-1 2xl:px-4 2xl:py-2 rounded-lg text-white 2xl:font-semibold;
 }
 

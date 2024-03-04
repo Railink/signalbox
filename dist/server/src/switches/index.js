@@ -25,10 +25,13 @@ const readSwitchState = (railSwitch) => {
     const plusPin = railSwitch.plus.pin;
     const minusState = (0, io_1.readPin)(minusPin.id);
     const plusState = (0, io_1.readPin)(plusPin.id);
-    if (minusState === plusState)
+    if (minusState === minusPin.value.enabled &&
+        plusState === plusPin.value.disabled)
+        return state_1.SwitchState.MINUS;
+    else if (plusState === plusPin.value.enabled &&
+        minusState === minusPin.value.disabled)
+        return state_1.SwitchState.PLUS;
+    else
         return state_1.SwitchState.UNKNOWN;
-    return minusState === minusPin.value.enabled
-        ? state_1.SwitchState.MINUS
-        : state_1.SwitchState.PLUS;
 };
 exports.readSwitchState = readSwitchState;
