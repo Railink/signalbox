@@ -1,6 +1,6 @@
 .env
 *.log
-yarn*
+yarn-*
 config/*.yaml
 
 # Logs
