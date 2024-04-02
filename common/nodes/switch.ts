@@ -5,6 +5,7 @@ import { RailWaypoint } from "./waypoint";
 export interface RailSwitch {
     id: number;
     position: Position;
+    manual?: boolean;
     plus: RailSwitchDirection;
     minus: RailSwitchDirection;
     back: {

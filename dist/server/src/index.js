@@ -71,7 +71,7 @@ try {
         };
         (0, signals_1.initBlinkLoop)(); // Initialize signal blink loop
         app.context.stationConfig.switches.forEach((railSwitch) => {
-            console.log(`Rozjazd ${railSwitch.id} -----\nPin minusowy: #${railSwitch.minus.pin.id}\nPin plusowy: #${railSwitch.plus.pin.id}`);
+            exports.logger.info(`Switch ${railSwitch.id} -----\nMinus pin: #${railSwitch.minus.pin.id}\nPlus pin: #${railSwitch.plus.pin.id}`);
             (0, switches_2.setSwitch)(railSwitch, state_1.SwitchState.MINUS); // All switches to neutral state
         });
         app.context.stationConfig.signals.forEach((railSignal) => (0, signals_1.setSignal)(railSignal, railSignal.defaultAspect) // All signals to default aspects

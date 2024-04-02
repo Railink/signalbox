@@ -26,6 +26,16 @@
                     </div>
                     <h2>{{ nameMap.get(finishNode?.toString() ?? "0") }}</h2>
                 </div>
+                <div class="mt-1" v-if="unknownSwitchesInPath(currentCheckedPath).length > 0">
+                    <h2 class="text-indicator-caution">
+                        Sprawdź położenie rozjazdów!
+                    </h2>
+                    <div class="mt-1 flex gap-3 flex-wrap">
+                        <div v-for="sw in unknownSwitchesInPath(currentCheckedPath)" class="bg-indicator-caution border-indicator-caution-darker text-slate-100 switch w-fit">
+                            {{ sw }}
+                        </div>
+                    </div>
+                </div>
                 <div class="path-confirmation">
                     <button
                         class="confirm"
@@ -153,7 +163,7 @@
                 >
                     <select name="start" id="start" v-model="selectedSignal">
                         <option
-                            v-for="signal in signalList.sort(s => s.id)"
+                            v-for="signal in signalList.sort((s) => s.id)"
                             :value="signal.id"
                             :key="signal.id"
                         >
@@ -215,6 +225,7 @@
                         <option value="50">50s</option>
                         <option value="55">55s</option>
                         <option value="60">60s</option>
+                        <option value="90">90s</option>
                     </select>
                     <button type="submit">Ustaw</button>
                 </form>
@@ -241,7 +252,7 @@
             <h1>Aktywne manewry</h1>
             <ul class="min-h-64 h-64 max-h-64 overflow-y-auto">
                 <li class="path" v-for="[id, steps] in activeQueues">
-                    <button @click="resetPath(id)" class="-mr-2 contents">
+                    <button @click="cancelQueue(id)" class="-mr-2 contents">
                         <span
                             class="icon-[uil--trash] text-3xl text-indicator-negative hover:text-indicator-negative-darker"
                         />
@@ -313,7 +324,7 @@
 <script setup lang="ts">
 import axios from "axios";
 import { LinkedListItem } from "dijkstra-calculator";
-import { ref, inject, onMounted, reactive, watchEffect, watch } from "vue";
+import { ref, inject, onMounted, reactive, watch } from "vue";
 import { RailSignal } from "@common/nodes/signal";
 import { NodeState } from "@common/nodes/state";
 import { RailWaypoint } from "@common/nodes/waypoint";
@@ -328,6 +339,7 @@ import {
     fetchSwitches,
     fetchCurrentQueues,
 } from "../composables/fetch";
+import { RailSwitch } from "@common/nodes/switch";
 
 type CheckedPath = LinkedListItem[][];
 
@@ -338,6 +350,7 @@ interface ErrorModal {
 
 const pointList = ref<RailWaypoint[]>([]);
 const signalList = ref<(RailSignal & NodeState)[]>([]);
+const switchList = ref<(RailSwitch & NodeState)[]>([]);
 const startNode = ref<number>();
 const finishNode = ref<number>();
 const selectedSignal = ref<number>();
@@ -370,9 +383,10 @@ onMounted(async () => {
     );
     await updateSignals();
     pointList.value.forEach((p) => nameMap.set(p.id.toString(), p.name));
-    (await fetchSwitches()).forEach((s) =>
-        nameMap.set(s.id.toString(), `${s.id}`)
-    );
+    (await fetchSwitches()).forEach((s) => {
+        switchList.value.push(s);
+        nameMap.set(s.id.toString(), `${s.id}`);
+    });
 });
 
 const checkPath = async (from: string, to: string): Promise<CheckedPath> => {
@@ -392,6 +406,13 @@ const confirmPath = async () => {
 
     currentCheckedPath.value = checkedPath;
     pathConfirmationModalVisible.value = true;
+};
+
+const unknownSwitchesInPath = (checkedPath: CheckedPath) => {
+    const switches = checkedPath
+        .flat()
+        .flatMap((i) => switchList.value.find((s) => s.id.toString() == i.source));
+    return [...switches.filter((s) => s?.manual).map(s => s?.id).values()];
 };
 
 const submitPath = async (checkedPath: CheckedPath) => {
@@ -465,12 +486,12 @@ const setSignal = async () => {
 };
 
 const updateSignals = async () => {
-    signalList.value = await fetchSignals();
+    signalList.value = (await fetchSignals()).sort((a, b) => a.id - b.id);
 };
 
 const resetSignal = async (signal: number) => {
     await axios.post(`${useBaseURL()}/signals/close/${signal}`);
-    signalList.value = await fetchSignals();
+    await updateSignals();
 };
 
 const openQueueModal = async (id: string) => {
@@ -483,6 +504,14 @@ const openQueueModal = async (id: string) => {
             queue[queue.length - 1][queue[queue.length - 1].length - 1].target
         ) ?? "Unknown";
     queueModalVisible.value = true;
+};
+
+const cancelQueue = async (id: string) => {
+    await axios.post(`${useBaseURL()}/path/queue/${id}/destroy`);
+    activeQueues.clear();
+    (await fetchCurrentQueues()).forEach((p) => {
+        activeQueues.set(p.id, p.steps);
+    });
 };
 
 const nextStep = async (id: string) => {
@@ -560,13 +589,13 @@ button.confirm-queue {
 .path-confirmation {
     @apply mt-6;
     button {
-        @apply px-3 py-1 text-white text-xl rounded-md font-semibold;
+        @apply px-3 py-1 text-white text-xl rounded-md font-semibold border-2;
         &.confirm {
-            @apply bg-indicator-positive hover:bg-indicator-positive-darker;
+            @apply border-indicator-positive-darker bg-indicator-positive hover:bg-indicator-positive-darker;
         }
 
         &.cancel {
-            @apply bg-indicator-negative hover:bg-indicator-negative-darker ml-2;
+            @apply border-indicator-negative-darker bg-indicator-negative hover:bg-indicator-negative-darker ml-2;
         }
     }
 }

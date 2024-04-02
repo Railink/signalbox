@@ -2,13 +2,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getRailSignal = exports.setSignal = exports.initBlinkLoop = void 0;
 const io_1 = require("../io");
-const console_1 = require("console");
 const timers_1 = require("timers");
 let blinkingPins = [];
 const initBlinkLoop = () => {
     let loopNum = 0;
     return (0, timers_1.setInterval)(() => {
-        switch (loopNum % 1) {
+        switch (loopNum % 2) {
             case 0:
                 blinkingPins.forEach((pin) => (0, io_1.writePin)(pin.id, pin.value.disabled));
                 loopNum++;
@@ -23,7 +22,6 @@ const initBlinkLoop = () => {
 exports.initBlinkLoop = initBlinkLoop;
 const setSignal = (signal, aspectId, time) => {
     const aspectToSet = signal.aspects.find((a) => a.id === aspectId);
-    (0, console_1.log)(aspectId, aspectToSet);
     if (!aspectToSet)
         throw new Error(`Invalid aspect ID! ${aspectId}`);
     // `for` instead of `forEach` for better performance

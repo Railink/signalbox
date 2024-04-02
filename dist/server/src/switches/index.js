@@ -6,6 +6,8 @@ const io_1 = require("../io");
 const setSwitch = (railSwitch, switchState) => {
     const minusPin = railSwitch.minus.pin;
     const plusPin = railSwitch.plus.pin;
+    if (railSwitch.manual)
+        return;
     switch (switchState) {
         case state_1.SwitchState.PLUS: // Disable minus first, and then switch plus on
             (0, io_1.writePin)(minusPin.id, minusPin.value.disabled);
@@ -23,6 +25,8 @@ exports.setSwitch = setSwitch;
 const readSwitchState = (railSwitch) => {
     const minusPin = railSwitch.minus.pin;
     const plusPin = railSwitch.plus.pin;
+    if (railSwitch.manual)
+        return state_1.SwitchState.UNKNOWN;
     const minusState = (0, io_1.readPin)(minusPin.id);
     const plusState = (0, io_1.readPin)(plusPin.id);
     if (minusState === minusPin.value.enabled &&

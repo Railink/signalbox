@@ -4,18 +4,23 @@
             v-for="state in switchState"
             :key="state.id"
             class="switch"
+            :class="state.manual ? `bg-indicator-caution border-indicator-caution-darker text-slate-100` : 'bg-background border-border'"
             @click="toggleSwitch(state.id, state.state == 0 ? 1 : 0)"
         >
             <span
-                v-if="state.state == 1 && !isLocked(state.id)"
+                v-if="state.manual"
+                class="icon-[uil--question-circle] text-slate-100"
+            />
+            <span
+                v-else-if="state.state == 1 && !isLocked(state.id)"
                 class="icon-[uil--arrow-up-right] text-indicator-positive"
             />
             <span
-                v-if="state.state == 0 && !isLocked(state.id)"
+                v-else-if="state.state == 0 && !isLocked(state.id)"
                 class="icon-[uil--arrow-down-right] text-indicator-negative"
             />
             <span
-                v-if="isLocked(state.id)"
+                v-else-if="isLocked(state.id)"
                 class="icon-[uil--lock] text-indicator-ambient"
             />
             <h2>{{ state.id }}</h2>
@@ -38,7 +43,7 @@ let switchState = ref<(RailSwitch & NodeState)[]>([]);
 
 onMounted(async () => {
     switchState.value = await fetchSwitches();
-    console.log(switchState.value);
+    console.log(switchState.value.map((s) => s.manual));
 });
 
 const isLocked = (switchId: number) => {
@@ -63,9 +68,3 @@ const toggleSwitch = async (switchId: number, to: number) => {
     await panelInjection?.panel().updatePanel(switchState.value);
 };
 </script>
-
-<style lang="scss" scoped>
-.switch {
-    @apply text-xl bg-background px-2 flex items-center gap-4 border border-border rounded-lg cursor-pointer select-none;
-}
-</style>

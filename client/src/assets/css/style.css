@@ -10,3 +10,7 @@ html, body, #app {
     margin: 0;
     height: 100%;
 }
+
+.switch {
+    @apply text-xl px-2 flex items-center gap-4 border-2 rounded-lg cursor-pointer select-none;
+}

@@ -19,8 +19,8 @@ module.exports = {
                 "indicator-positive-darker": colors.emerald[600],
                 "indicator-negative": colors.red[500],
                 "indicator-negative-darker": colors.red[600],
-                "indicator-caution": colors.yellow[500],
-                "indicator-caution-darker": colors.yellow[600],
+                "indicator-caution": colors.orange[400],
+                "indicator-caution-darker": colors.orange[500],
             },
             fontFamily: {
                 roboto: ["Roboto", ...defaultTheme.fontFamily.sans],

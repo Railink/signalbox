@@ -70,7 +70,6 @@ const setPath = (stationConfig, steps, withSignals // TODO: Automatic signal set
                     (0, switches_1.setSwitch)(source, state);
                 }
                 if (!(0, waypoint_1.isWaypoint)(target)) {
-                    console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", target, source);
                     const state = target.minus.node === source.id
                         ? state_1.SwitchState.MINUS
                         : state_1.SwitchState.PLUS;

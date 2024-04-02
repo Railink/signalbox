@@ -102,7 +102,6 @@ export const setPath = (
                     setSwitch(source, state);
                 }
                 if (!isWaypoint(target)) {
-                    console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", target, source);
                     const state =
                         target.minus.node === source.id
                             ? SwitchState.MINUS

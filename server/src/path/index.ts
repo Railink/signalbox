@@ -24,8 +24,6 @@ export const checkPathSate = (
         return PathState.UNSAFE;
 
     let directionChange = false;
-
-    console.log("AAA", source, target, calculatedPath);
     
     for (let step of calculatedPath) {
         const source = getNode(step.source, stationConfig);
@@ -34,7 +32,6 @@ export const checkPathSate = (
         if (!source || !target) continue;
 
         if (!canTravelBetween(source, target)) {
-            console.log(source.id, target.id)
             return PathState.UNSAFE
         };
 
@@ -122,7 +119,6 @@ export const calculatePath = (
                 pn.neighbors.right?.cost
             );
         } else {
-            console.log(pn);
             graph.addEdge(
                 pn.id.toString(),
                 pn.back.node.toString(),
@@ -177,7 +173,6 @@ export const canTravelBetween = (
                 : SwitchState.UNKNOWN;
 
         // The target is behind the source
-        console.log(source.back, target.id, requiredTargetState, targetState)
         if (source.back.node === target.id) return requiredTargetState == targetState;
 
         if (sourceState === SwitchState.MINUS) {

@@ -8,6 +8,7 @@ export default class RLSR74HC595 implements Controller {
     private pinCount: number;
     private pins: number[];
     private environment: Map<string, string>;
+    private lowTrigger: boolean;
 
     private latchClock: Gpio;
     private shiftClock: Gpio;
@@ -38,6 +39,7 @@ export default class RLSR74HC595 implements Controller {
             throw new Error("The pin count must be a multiple of 16");
 
         this.pinCount = Number(this.environment.get("PIN_COUNT"));
+        this.lowTrigger = Boolean(this.environment.get("LOW_TRIGGER")) || false;
         this.latchClock = new Gpio(
             Number(this.environment.get("LATCH_CLOCK")),
             "out"
@@ -65,7 +67,13 @@ export default class RLSR74HC595 implements Controller {
         this.pins[pin] = value as number;
 
         for (let i = this.pinCount - 1; i >= 0; i--) {
-            this.dataPin.writeSync(this.pins[i] as 0 | 1); // Write data\
+            this.dataPin.writeSync(
+                this.lowTrigger
+                    ? this.pins[i] == 0 // replace 0 with 1 if lowTrigger (active on 0)
+                        ? 1
+                        : (0 as 0 | 1)
+                    : (this.pins[i] as 0 | 1)
+            ); // Write data\
 
             // Shift data
             this.shiftClock.writeSync(0);

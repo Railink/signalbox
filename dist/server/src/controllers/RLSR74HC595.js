@@ -21,6 +21,7 @@ class RLSR74HC595 {
         if (pinCount % 16 != 0)
             throw new Error("The pin count must be a multiple of 16");
         this.pinCount = Number(this.environment.get("PIN_COUNT"));
+        this.lowTrigger = Boolean(this.environment.get("LOW_TRIGGER")) || false;
         this.latchClock = new onoff_1.Gpio(Number(this.environment.get("LATCH_CLOCK")), "out");
         this.shiftClock = new onoff_1.Gpio(Number(this.environment.get("SHIFT_CLOCK")), "out");
         this.dataPin = new onoff_1.Gpio(Number(this.environment.get("DATA_PIN")), "low");
@@ -35,7 +36,11 @@ class RLSR74HC595 {
         __1.logger.info(`Setting pin ${pin} on controller to ${value}`);
         this.pins[pin] = value;
         for (let i = this.pinCount - 1; i >= 0; i--) {
-            this.dataPin.writeSync(this.pins[i]); // Write data\
+            this.dataPin.writeSync(this.lowTrigger
+                ? this.pins[i] == 0 // replace 0 with 1 if lowTrigger (active on 0)
+                    ? 1
+                    : 0
+                : this.pins[i]); // Write data\
             // Shift data
             this.shiftClock.writeSync(0);
             this.shiftClock.writeSync(1);

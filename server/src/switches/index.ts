@@ -7,6 +7,8 @@ export const setSwitch = (railSwitch: RailSwitch, switchState: SwitchState) => {
     const minusPin = railSwitch.minus.pin;
     const plusPin = railSwitch.plus.pin;
 
+    if (railSwitch.manual) return;
+
     switch (switchState) {
         case SwitchState.PLUS: // Disable minus first, and then switch plus on
             writePin(minusPin.id, minusPin.value.disabled);
@@ -24,6 +26,8 @@ export const setSwitch = (railSwitch: RailSwitch, switchState: SwitchState) => {
 export const readSwitchState = (railSwitch: RailSwitch) => {
     const minusPin = railSwitch.minus.pin;
     const plusPin = railSwitch.plus.pin;
+
+    if (railSwitch.manual) return SwitchState.UNKNOWN;
 
     const minusState = readPin(minusPin.id);
     const plusState = readPin(plusPin.id);

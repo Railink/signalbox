@@ -19,14 +19,12 @@ const checkPathSate = (source, target, stationConfig) => {
     if ((0, exports.splitPathOnDirectionChange)(stationConfig, calculatedPath).length > 1)
         return PathState.UNSAFE;
     let directionChange = false;
-    console.log("AAA", source, target, calculatedPath);
     for (let step of calculatedPath) {
         const source = (0, config_util_1.getNode)(step.source, stationConfig);
         const target = (0, config_util_1.getNode)(step.target, stationConfig);
         if (!source || !target)
             continue;
         if (!(0, exports.canTravelBetween)(source, target)) {
-            console.log(source.id, target.id);
             return PathState.UNSAFE;
         }
         ;
@@ -90,7 +88,6 @@ const calculatePath = (start, finish, stationConfig) => {
             graph.addEdge(pn.id.toString(), (_g = (_f = (_e = pn.neighbors.right) === null || _e === void 0 ? void 0 : _e.node) === null || _f === void 0 ? void 0 : _f.toString()) !== null && _g !== void 0 ? _g : `___VOID___[${randString}]`, (_h = pn.neighbors.right) === null || _h === void 0 ? void 0 : _h.cost);
         }
         else {
-            console.log(pn);
             graph.addEdge(pn.id.toString(), pn.back.node.toString(), pn.back.cost);
             graph.addEdge(pn.id.toString(), pn.plus.node.toString(), pn.plus.cost);
             graph.addEdge(pn.id.toString(), pn.minus.node.toString(), pn.minus.cost);
@@ -123,7 +120,6 @@ const canTravelBetween = (source, target) => {
                 ? state_1.SwitchState.PLUS
                 : state_1.SwitchState.UNKNOWN;
         // The target is behind the source
-        console.log(source.back, target.id, requiredTargetState, targetState);
         if (source.back.node === target.id)
             return requiredTargetState == targetState;
         if (sourceState === state_1.SwitchState.MINUS) {

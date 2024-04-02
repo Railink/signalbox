@@ -10,7 +10,7 @@ let blinkingPins: PinSignal[] = [];
 export const initBlinkLoop = (): NodeJS.Timer => {
     let loopNum = 0;
     return setInterval(() => {
-        switch (loopNum % 1) {
+        switch (loopNum % 2) {
             case 0:
                 blinkingPins.forEach((pin) =>
                     writePin(pin.id, pin.value.disabled)
@@ -33,7 +33,6 @@ export const setSignal = (
     time?: number
 ): void => {
     const aspectToSet = signal.aspects.find((a) => a.id === aspectId);
-    log(aspectId, aspectToSet);
     if (!aspectToSet) throw new Error(`Invalid aspect ID! ${aspectId}`);
 
     // `for` instead of `forEach` for better performance

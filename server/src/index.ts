@@ -100,7 +100,7 @@ try {
         initBlinkLoop(); // Initialize signal blink loop
 
         app.context.stationConfig.switches.forEach((railSwitch) => {
-            console.log(`Rozjazd ${railSwitch.id} -----\nPin minusowy: #${railSwitch.minus.pin.id}\nPin plusowy: #${railSwitch.plus.pin.id}`);
+            logger.info(`Switch ${railSwitch.id} -----\nMinus pin: #${railSwitch.minus.pin.id}\nPlus pin: #${railSwitch.plus.pin.id}`);
             setSwitch(railSwitch, SwitchState.MINUS) // All switches to neutral state
         });
 
