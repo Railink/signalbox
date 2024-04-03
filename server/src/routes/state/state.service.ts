@@ -25,8 +25,9 @@ export const signalState = (
     const state: (RailSignal & NodeState)[] = signals.map((signal) => {
         const { aspects } = signal;
 
+        // TODO: Check pulse functionality
         const aspectCombinations = aspects.map((a) =>
-            a.pins.map((p) => [p.id, p.value.enabled, a.id])
+            a.pins.map((p) => [p.id, signal.pulse ? p.value.disabled : p.value.enabled, a.id])
         );
         const relevantPins = [
             ...new Set(aspects.map((a) => a.pins.map((p) => p.id)).flat()),

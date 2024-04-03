@@ -50,6 +50,12 @@ export const setSignal = (
     aspectToSet.pins.forEach((pinSignal) => {
         if (!pinSignal.blinking) {
             writePin(pinSignal.id, pinSignal.value.enabled);
+
+            if (signal.pulse) {
+                setTimeout(() => {
+                    writePin(pinSignal.id, pinSignal.value.disabled)
+                }, 1000);
+            }
         } else {
             blinkingPins.push(pinSignal);
         }

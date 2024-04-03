@@ -6,7 +6,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.controllerCreators = void 0;
 const TEST001_1 = __importDefault(require("./TEST001"));
 const RLSR74HC595_1 = __importDefault(require("./RLSR74HC595"));
+const MCP23017_1 = __importDefault(require("./MCP23017"));
 exports.controllerCreators = new Map([
     ["TEST001", (env) => new TEST001_1.default(env)],
-    ["RLSR74HC595", (env) => new RLSR74HC595_1.default(env)]
+    ["RLSR74HC595", (env) => new RLSR74HC595_1.default(env)],
+    ["MCP23017", (env) => new MCP23017_1.default(env)]
 ]);
