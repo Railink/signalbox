@@ -207,7 +207,7 @@ export const canTravelBetween = (
                 return true;
         }
 
-        if (requiredTargetState === SwitchState.UNKNOWN) return false; // Target unreachable from source
+        if (requiredTargetState === SwitchState.UNKNOWN) return false; // Target unreachable from source (or a switch in manual mode, can't check it's position)
     }
 
     if (isRailSwitch(source) && isWaypoint(target)) {

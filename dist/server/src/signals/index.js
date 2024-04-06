@@ -39,14 +39,16 @@ const setSignal = (signal, aspectId, time) => {
     aspectToSet.pins.forEach((pinSignal) => {
         if (!pinSignal.blinking) {
             (0, io_1.writePin)(pinSignal.id, pinSignal.value.enabled);
-            if (signal.pulse) {
-                setTimeout(() => {
-                    (0, io_1.writePin)(pinSignal.id, pinSignal.value.disabled);
-                }, 1000);
-            }
         }
         else {
             blinkingPins.push(pinSignal);
+        }
+        if (signal.pulse) {
+            setTimeout(() => {
+                aspectToSet.pins.forEach((pinSignal) => {
+                    (0, io_1.writePin)(pinSignal.id, pinSignal.value.disabled);
+                });
+            }, 1000);
         }
     });
     if (time && time > 0) {

@@ -18,6 +18,7 @@ const signalState = (signals) => {
     const state = signals.map((signal) => {
         var _a;
         const { aspects } = signal;
+        // TODO: Check pulse functionality
         const aspectCombinations = aspects.map((a) => a.pins.map((p) => [p.id, signal.pulse ? p.value.disabled : p.value.enabled, a.id]));
         const relevantPins = [
             ...new Set(aspects.map((a) => a.pins.map((p) => p.id)).flat()),
